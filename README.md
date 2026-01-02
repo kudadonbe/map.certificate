@@ -58,25 +58,36 @@ Firebase Storage (PDF Storage) + Email Delivery
 - [ ] Google Sheets API integration
 - [ ] Admin dashboard to view registration data
 - [ ] Approve and sync participants to Firestore
+- [ ] Firebase Storage setup for PDFs and assets
 
-### Phase 2: Certificate Generation
-- [ ] Certificate template design (HTML/CSS)
+### Phase 2: Data Management & Verification
+- [ ] Participant profile update form (bilingual: English & Dhivehi)
+- [ ] Staff verification interface
+- [ ] Profile update review and approval workflow
+- [ ] Bilingual data validation
+- [ ] Status management system
+
+### Phase 3: Certificate Generation
+- [ ] Bilingual certificate template design (HTML/CSS)
 - [ ] Firebase Function for PDF generation
 - [ ] Certificate preview functionality
 - [ ] Store generated PDFs in Firebase Storage
+- [ ] Asset management (logos, seals, signatures)
 
-### Phase 3: Email Automation
-- [ ] Email service integration
+### Phase 4: Email Automation
+- [ ] Microsoft Graph API integration
 - [ ] Bulk certificate email functionality
 - [ ] Email status tracking
 - [ ] Retry mechanism for failed emails
 - [ ] Email delivery logs
 
-### Phase 4: Participant Portal (Future)
+### Phase 5: Participant Portal
 - [ ] Participant login with Google/eFaas
-- [ ] View certificate status
-- [ ] Download certificates
-- [ ] Certificate verification system
+- [ ] Certificate status dashboard
+- [ ] Download certificates from Firebase Storage
+- [ ] Profile update interface
+- [ ] Certificate history view
+- [ ] Real-time status notifications
 
 ## Database Structure
 
@@ -85,30 +96,58 @@ Firebase Storage (PDF Storage) + Email Delivery
 ```javascript
 participants/
   {participantId}/
-    - name: string
+    // English & Dhivehi Names
+    - name: string (English)
+    - name_dv: string (Dhivehi)
+    - partner_name: string (English)
+    - partner_name_dv: string (Dhivehi)
+    
+    // Contact & ID
     - email: string
-    - partner_name: string
-    - course_date: timestamp
+    - phone: string
+    - id_number: string
+    - partner_id_number: string
+    
+    // Certificate Info
     - certificate_number: string
-    - status: "approved" | "certificate_sent" | "pending"
     - certificate_url: string (Firebase Storage link)
+    
+    // Status & Verification
+    - status: "pending" | "profile_submitted" | "verified" | "approved" | "certificate_sent"
+    - profile_verified: boolean
+    - verified_by: string (admin user ID)
+    
+    // Timestamps
     - email_sent_at: timestamp
     - created_at: timestamp
     - updated_at: timestamp
+    - user_id: string (Firebase Auth UID)
+
+profile_updates/
+  {updateId}/
+    - participant_id: string
+    - submitted_data: object (bilingual fields)
+    - status: "pending" | "approved" | "rejected"
+    - reviewed_by: string
+    - review_notes: string
 ```
 
 ## Benefits
 
 - ✅ **Multi-provider Authentication**: Secure login for staff (Office 365) and participants (Google/eFaas)
 - ✅ **Role-based Access Control**: Separate admin and participant portals
+- ✅ **Participant Self-Service**: Users can view, download certificates, and update profiles
+- ✅ **Bilingual Support**: English & Dhivehi names on certificates
+- ✅ **Staff Verification**: Two-step verification process for data accuracy
+- ✅ **Firebase Storage**: Secure PDF storage with role-based access
 - ✅ Modern, professional admin interface
-- ✅ Real-time status updates
+- ✅ Real-time status updates and notifications
 - ✅ Scalable and secure (Firebase)
 - ✅ Mobile-responsive dashboard
 - ✅ Audit trail for certificate generation
 - ✅ Reduced manual work (90% time savings)
 - ✅ Faster certificate delivery
-- ✅ Self-service participant portal (future)
+- ✅ Zero additional costs (uses existing subscriptions)
 
 ## Getting Started
 
@@ -166,21 +205,41 @@ map.certificate/
 │   ├── components/
 │   │   ├── ParticipantList.vue
 │   │   ├── CertificatePreview.vue
-│   │   └── EmailStatus.vue
+│   │   ├── EmailStatus.vue
+│   │   ├── ProfileUpdateForm.vue
+│   │   └── VerificationPanel.vue
 │   ├── stores/                   # Pinia stores
 │   │   ├── participants.js
-│   │   └── auth.js
+│   │   ├── auth.js
+│   │   └── profileUpdates.js
 │   ├── views/
-│   │   ├── Dashboard.vue
+│   │   ├── admin/
+│   │   │   ├── Dashboard.vue
+│   │   │   ├── VerificationQueue.vue
+│   │   │   └── CertificateManagement.vue
+│   │   ├── participant/
+│   │   │   ├── Portal.vue
+│   │   │   ├── CertificateView.vue
+│   │   │   └── ProfileEdit.vue
 │   │   └── Login.vue
 │   ├── composables/
-│   │   └── useFirebase.js
+│   │   ├── useFirebase.js
+│   │   └── useStorage.js
 │   └── main.js
 ├── functions/                    # Firebase Functions
 │   ├── index.js
 │   ├── certificateGenerator.js
 │   ├── emailSender.js
-│   └── sheetsSync.js
+│   ├── sheetsSync.js
+│   └── profileVerification.js
+├── storage/                      # Firebase Storage structure
+│   ├── certificates/
+│   │   └── {year}/{month}/
+│   ├── templates/
+│   └── assets/
+│       ├── logo.png
+│       ├── seal.png
+│       └── signature.png
 ├── public/
 │   └── certificate-template.html
 ├── docs/                         # Documentation

@@ -54,12 +54,25 @@ Build an automated web application to:
 - Acts as a filtered/approved subset of Google Sheets data
 
 #### 3. Application Layer
-- **Vue Admin Dashboard**: 
-  - View Google Sheets data
-  - Approve and sync participants to Firestore
-  - Select participants for certificate generation
-  - Trigger bulk email operations
-  - Monitor email delivery status
+
+**Admin Dashboard (Family Court Staff)**:
+- View Google Sheets registration data
+- Verify user-submitted profile updates
+- Approve/reject participants
+- Review and validate bilingual data (English & Dhivehi)
+- Select participants for certificate generation
+- Trigger bulk email operations
+- Monitor email delivery status
+- Manage system settings
+
+**Participant Portal (Public Users)**:
+- Login with Google/eFaas authentication
+- View certificate status (pending, approved, issued)
+- Download issued certificates (PDF)
+- Update personal profile information
+- Submit bilingual data (English & Dhivehi names)
+- Track profile verification status
+- View certificate history
 
 #### 4. Processing Layer
 - **Firebase Cloud Functions**:
@@ -69,8 +82,13 @@ Build an automated web application to:
   - Log operations
 
 #### 5. Storage Layer
-- **Firebase Storage**: Store generated PDF certificates
-- Provides secure URLs for accessing certificates
+- **Firebase Storage**: 
+  - Store generated PDF certificates
+  - Store certificate templates and assets (logos, signatures, backgrounds)
+  - Store user profile documents (if needed)
+  - Organize by folders: `/certificates/{year}/{month}/`, `/assets/`, `/templates/`
+  - Secure access with Firebase Storage Rules
+  - Provide secure download URLs for participants
 
 ---
 
@@ -108,14 +126,16 @@ Build an automated web application to:
 - Manage participant approval workflow
 
 **Tasks:**
-1. Design Firestore data structure
+1. Design Firestore data structure (with bilingual fields)
 2. Create participant list component
-3. Implement "Approve" functionality
+3. Implement "Approve" and "Verify" functionality
 4. Sync approved participants to Firestore
 5. Add filtering and search features
-6. Implement participant status management
+6. Implement participant status management (pending, verified, approved, rejected)
 7. Create bulk approve functionality
-8. Add edit participant details feature
+8. Build profile verification interface for staff
+9. Add bilingual data validation (English & Dhivehi)
+10. Implement data review and edit features
 
 **Deliverables:**
 - Approved participants stored in Firestore
@@ -172,7 +192,34 @@ Build an automated web application to:
 
 ---
 
-### Phase 5: Testing & Deployment (Week 9-10)
+### Phase 4.5: Participant Portal (Week 8-9)
+
+**Goals:**
+- Build participant self-service portal
+- Allow profile updates and certificate downloads
+- Implement verification workflow
+
+**Tasks:**
+1. Create participant authentication (Google/eFaas)
+2. Build participant dashboard UI
+3. Implement certificate viewer with download
+4. Create profile update form (bilingual: English & Dhivehi)
+5. Add profile verification status display
+6. Build certificate status tracker
+7. Implement real-time notifications
+8. Add certificate history view
+9. Create user-friendly error messages
+10. Test participant user experience
+
+**Deliverables:**
+- Working participant portal
+- Users can login, view, and download certificates
+- Users can update and submit profile information
+- Staff can verify submitted data
+
+---
+
+### Phase 5: Testing & Deployment (Week 10-11)
 
 **Goals:**
 - Test entire system
@@ -219,23 +266,82 @@ Admin selects participants to approve
     ↓
 Approved participants synced to Firestore
     ↓
-Status set as "approved"
+Status set as "pending" (awaiting profile completion)
 ```
 
-### 3. Certificate Generation & Email
+### 3. Participant Profile Update
 ```
-Admin selects approved participants
+Participant logs in (Google/eFaas)
+    ↓
+View certificate status: "Profile Incomplete"
+    ↓
+Update profile form:
+  - Name (English & Dhivehi)
+  - Partner name (English & Dhivehi)
+  - ID numbers
+    ↓
+Submit profile update
+    ↓
+Create record in profile_updates collection
+    ↓
+Status changed to "profile_submitted"
+    ↓
+Notification sent to FC staff
+```
+
+### 4. Staff Verification
+```
+FC Staff views pending profile updates
+    ↓
+Review submitted information:
+  - Verify English names
+  - Verify Dhivehi names
+  - Verify ID numbers
+  - Check data accuracy
+    ↓
+Approve or Reject with notes
+    ↓
+If approved:
+  - Update participant record in Firestore
+  - Status changed to "verified"
+  - Notify participant
+If rejected:
+  - Send rejection reason
+  - Request corrections
+```
+
+### 5. Certificate Generation & Email
+```
+Admin selects verified participants
     ↓
 Clicks "Generate & Email Certificates"
     ↓
 Firebase Function triggered
     ↓
 For each participant:
-  - Generate PDF certificate
-  - Upload to Firebase Storage
-  - Send email with certificate attachment
+  - Generate bilingual PDF certificate (English & Dhivehi)
+  - Upload to Firebase Storage (/certificates/2026/01/MAP-2026-001.pdf)
+  - Send email with certificate attachment via Microsoft Graph
   - Update Firestore status to "certificate_sent"
+  - Update certificate_url field
   - Log email delivery result
+    ↓
+Participant receives email notification
+```
+
+### 6. Participant Certificate Download
+```
+Participant logs into portal
+    ↓
+Views certificate status: "Certificate Issued"
+    ↓
+Clicks "Download Certificate"
+    ↓
+Firebase Storage generates secure download URL
+    ↓
+PDF downloaded from Firebase Storage
+    ↓
+Download logged in participant record
 ```
 
 ---
@@ -248,21 +354,53 @@ For each participant:
 ```javascript
 {
   id: "auto-generated-id",
+  
+  // English Information
   name: "Ahmed Ali",
   partner_name: "Aminath Sara",
+  
+  // Dhivehi Information (User-submitted)
+  name_dv: "އަހްމަދު އަލީ",
+  partner_name_dv: "އާމިނަތު ސާރާ",
+  
+  // Contact Information
   email: "ahmed@example.com",
   phone: "7777777",
   id_number: "A123456",
+  partner_id_number: "A654321",
+  
+  // Program Information
   course_date: Timestamp,
+  course_completed: true,
+  
+  // Certificate Information
   certificate_number: "MAP-2026-001",
-  status: "approved" | "certificate_sent" | "pending" | "failed",
-  certificate_url: "https://storage.firebase.com/...",
+  certificate_url: "https://storage.firebase.com/certificates/2026/01/MAP-2026-001.pdf",
+  certificate_generated_at: Timestamp,
+  
+  // Status Management
+  status: "pending" | "profile_submitted" | "verified" | "approved" | "certificate_sent" | "rejected",
+  profile_verified: false,
+  verification_notes: "Pending ID verification",
+  verified_by: "admin_user_id",
+  verified_at: Timestamp,
+  
+  // Email Tracking
   email_sent_at: Timestamp,
   email_attempts: 0,
+  email_status: "pending" | "sent" | "failed",
+  
+  // User Profile Management
+  profile_updated_at: Timestamp,
+  profile_update_requested: false,
+  profile_complete: false,
+  
+  // System Fields
   created_at: Timestamp,
   updated_at: Timestamp,
   synced_from_sheets: true,
-  sheet_row_number: 5
+  sheet_row_number: 5,
+  user_id: "firebase_auth_uid" // Link to authenticated user
 }
 ```
 
@@ -289,7 +427,41 @@ For each participant:
   certificate_prefix: "MAP",
   email_from: "certificates@familycourt.gov.mv",
   email_subject: "MAP Certificate - Marriage Awareness Program",
-  last_certificate_number: 150
+  last_certificate_number: 150,
+  storage_paths: {
+    certificates: "/certificates/{year}/{month}/",
+    templates: "/templates/",
+    assets: "/assets/"
+  }
+}
+```
+
+#### `profile_updates` Collection
+```javascript
+{
+  id: "auto-generated-id",
+  participant_id: "reference-to-participant",
+  user_id: "firebase_auth_uid",
+  
+  // Submitted Data
+  name: "Ahmed Ali",
+  name_dv: "އަހްމަދު އަލީ",
+  partner_name: "Aminath Sara",
+  partner_name_dv: "އާމިނަތު ސާރާ",
+  id_number: "A123456",
+  partner_id_number: "A654321",
+  
+  // Status
+  status: "pending" | "approved" | "rejected",
+  submitted_at: Timestamp,
+  reviewed_by: "admin_user_id",
+  reviewed_at: Timestamp,
+  review_notes: "ID number verified",
+  
+  // Changes tracking
+  changes: {
+    field_name: { old: "old_value", new: "new_value" }
+  }
 }
 ```
 
@@ -298,19 +470,28 @@ For each participant:
 ## Certificate Template Design
 
 ### Required Fields on Certificate
+
+**English Section:**
 - Certificate Number (e.g., MAP-2026-001)
-- Participant Name
-- Partner Name
+- Participant Name (English)
+- Partner Name (English)
 - Course Date
 - Issue Date
 - Official Seal/Logo
 - Signatures (authorized persons)
+
+**Dhivehi Section:**
+- Participant Name (Dhivehi - ދިވެހި)
+- Partner Name (Dhivehi - ދިވެހި)
+- Course completion text in Dhivehi
 
 ### Template Format
 - Size: A4 (210mm × 297mm)
 - Orientation: Landscape
 - Format: PDF
 - Design: Professional, formal with Family Court branding
+- Language: Bilingual (English & Dhivehi)
+- Assets stored in Firebase Storage: `/assets/logo.png`, `/assets/seal.png`, `/assets/signature.png`
 
 ---
 
@@ -524,6 +705,52 @@ service cloud.firestore {
       allow read, write: if request.auth != null && 
                           request.auth.token.role == 'admin';
     }
+    
+    // Profile updates - Participants can create/read own, Admin can read/write all
+    match /profile_updates/{updateId} {
+      allow create: if request.auth != null && 
+                       request.auth.token.role == 'participant';
+      allow read: if request.auth != null && 
+                     (request.auth.token.role == 'admin' ||
+                      request.auth.uid == resource.data.user_id);
+      allow write: if request.auth != null && 
+                      request.auth.token.role == 'admin';
+    }
+  }
+}
+
+// Firebase Storage Rules
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Certificates - Participants can read own, Admin can read/write all
+    match /certificates/{year}/{month}/{filename} {
+      allow read: if request.auth != null && 
+                     (request.auth.token.role == 'admin' ||
+                      isOwner(filename));
+      allow write: if request.auth != null && 
+                      request.auth.token.role == 'admin';
+    }
+    
+    // Templates and Assets - Admin only write, Public read
+    match /templates/{filename} {
+      allow read: if true; // Public read for certificate generation
+      allow write: if request.auth != null && 
+                      request.auth.token.role == 'admin';
+    }
+    
+    match /assets/{filename} {
+      allow read: if true; // Public read for logos, seals
+      allow write: if request.auth != null && 
+                      request.auth.token.role == 'admin';
+    }
+    
+    // Helper function to check if user owns the certificate
+    function isOwner(filename) {
+      let participantData = firestore.get(/databases/(default)/documents/participants/$(request.auth.uid));
+      return filename.matches(participantData.data.certificate_number + '.*');
+    }
   }
 }
 ```
@@ -540,11 +767,17 @@ service cloud.firestore {
 3. **Domain Restriction**: Only @familycourt.gov.mv emails get admin access
 4. **Google Sheets API**: Use service account with read-only access
 5. **Firestore Rules**: Strict rules based on user roles and email verification
-6. **Firebase Storage Rules**: Role-based access to certificate files
-7. **Email**: Use verified sender email address
-8. **Environment Variables**: Store API keys and secrets securely
+6. **Firebase Storage Rules**: 
+   - Role-based access to certificate files
+   - Participants can only download their own certificates
+   - Admin can manage all files
+   - Public read access for templates and assets (for certificate generation)
+7. **Email**: Use verified sender email address (certificates@familycourt.gov.mv)
+8. **Environment Variables**: Store API keys and secrets securely in Firebase Functions config
 9. **Rate Limiting**: Prevent abuse of email sending and API calls
 10. **Audit Logs**: Track all admin actions and certificate generations
+11. **Data Validation**: Validate bilingual input (English & Dhivehi) before saving
+12. **Profile Verification**: Two-step verification (user submission + staff approval)
 
 ---
 
@@ -560,24 +793,29 @@ service cloud.firestore {
 
 ## Future Enhancements
 
-### Phase 1 Enhancements
-1. **Participant Portal**: Self-service portal for participants to view and download certificates
-2. **Google OAuth Integration**: Allow participants to login and access their certificates
-3. **Certificate Verification**: Public portal to verify certificate authenticity via QR code
+### Completed in Initial Release
+1. ✅ **Participant Portal**: Self-service portal for participants to view and download certificates
+2. ✅ **Google OAuth Integration**: Participants can login and access their certificates
+3. ✅ **Profile Management**: Users can update bilingual personal information
+4. ✅ **Staff Verification**: FC staff verify user-submitted data
+5. ✅ **Bilingual Certificates**: English & Dhivehi support on certificates
+6. ✅ **Firebase Storage**: PDF storage and asset management
 
 ### Phase 2 Enhancements
-4. **eFaas Integration**: Maldives Government SSO for participant authentication
-5. **SMS Notifications**: Send SMS with certificate link using local SMS gateway
-6. **Multi-language Support**: Dhivehi language support for certificates and interface
-7. **Analytics Dashboard**: Track program statistics, participation rates, and trends
+7. **Certificate Verification**: Public portal to verify certificate authenticity via QR code
+8. **eFaas Integration**: Maldives Government SSO for participant authentication
+9. **SMS Notifications**: Send SMS with certificate link using local SMS gateway
+10. **Analytics Dashboard**: Track program statistics, participation rates, and trends
+11. **Push Notifications**: Real-time notifications for certificate status updates
 
 ### Phase 3 Enhancements
-8. **Batch Import**: Upload CSV to bulk approve participants
-9. **Advanced Reporting**: Generate reports on certificate issuance, email delivery rates
-10. **Reminder System**: Automated reminders for incomplete registrations
-11. **Certificate Templates**: Multiple certificate designs for different program types
-12. **Digital Signatures**: Integrate digital signatures for certificate authenticity
-13. **API Integration**: REST API for integration with other Family Court systems
+12. **Batch Import**: Upload CSV to bulk approve participants
+13. **Advanced Reporting**: Generate reports on certificate issuance, email delivery rates
+14. **Reminder System**: Automated reminders for incomplete profile updates
+15. **Certificate Templates**: Multiple certificate designs for different program types
+16. **Digital Signatures**: Integrate digital signatures for certificate authenticity
+17. **API Integration**: REST API for integration with other Family Court systems
+18. **Mobile App**: Native mobile app for certificate access
 
 ---
 
@@ -627,12 +865,13 @@ service cloud.firestore {
 
 ## Timeline Summary
 
-- **Phase 1-2**: Foundation & Data (4 weeks)
+- **Phase 1-2**: Foundation & Data Management (4 weeks)
 - **Phase 3**: Certificate Generation (2 weeks)
 - **Phase 4**: Email Integration (2 weeks)
+- **Phase 4.5**: Participant Portal (2 weeks)
 - **Phase 5**: Testing & Deployment (2 weeks)
 
-**Total Estimated Time: 10 weeks**
+**Total Estimated Time: 12 weeks**
 
 ---
 
@@ -645,5 +884,5 @@ service cloud.firestore {
 
 ---
 
-*Document Version: 1.2*  
+*Document Version: 1.3*  
 *Last Updated: January 2, 2026*
