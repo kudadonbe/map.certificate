@@ -49,6 +49,26 @@ Firebase Storage (PDF Storage) + Email Delivery
 
 ## Features
 
+### ✨ New: Certificate Template Customization System
+
+- **Visual Template Editor**: Create and customize certificate templates with live preview
+- **Dual View Modes**: Preview certificates in both A4 print format and mobile-first digital view
+- **Flexible Layouts**: Support for portrait/landscape, A4/Letter sizes
+- **Customizable Design**:
+  - Background colors, gradients, and images
+  - Borders with multiple styles (solid, dashed, dotted, double)
+  - Theme colors (primary, secondary, accent, text)
+  - Custom fonts with size, weight, and color controls
+- **Signatures & Stamps**: 
+  - Add multiple signatures with signatory names and titles
+  - Upload official seals and stamps
+  - Position and customize opacity
+- **Bilingual Support**: Separate elements for English and Dhivehi text
+- **Template Management**: Create, edit, duplicate, delete, and set default templates
+- **Asset Storage**: Secure upload and management of signatures, stamps, and backgrounds in Firebase Storage
+
+[📖 Full Template Documentation](docs/TEMPLATE_CUSTOMIZATION.md)
+
 ### Phase 1: Setup & Data Sync
 - [ ] Vue + Vite + Firebase project initialization
 - [ ] Multi-provider authentication setup
@@ -207,16 +227,25 @@ map.certificate/
 │   │   ├── CertificatePreview.vue
 │   │   ├── EmailStatus.vue
 │   │   ├── ProfileUpdateForm.vue
-│   │   └── VerificationPanel.vue
+│   │   ├── VerificationPanel.vue
+│   │   └── template/
+│   │       └── TemplateEditor.vue
 │   ├── stores/                   # Pinia stores
 │   │   ├── participants.js
 │   │   ├── auth.js
-│   │   └── profileUpdates.js
+│   │   ├── profileUpdates.js
+│   │   └── template.store.ts
+│   ├── types/
+│   │   └── template.types.ts
+│   ├── utils/
+│   │   └── template.defaults.ts
 │   ├── views/
 │   │   ├── admin/
 │   │   │   ├── Dashboard.vue
 │   │   │   ├── VerificationQueue.vue
-│   │   │   └── CertificateManagement.vue
+│   │   │   ├── CertificateManagement.vue
+│   │   │   └── template/
+│   │   │       └── TemplateManager.vue
 │   │   ├── participant/
 │   │   │   ├── Portal.vue
 │   │   │   ├── CertificateView.vue
@@ -244,6 +273,8 @@ map.certificate/
 │   └── certificate-template.html
 ├── docs/                         # Documentation
 │   ├── PROJECT_PLAN.md
+│   ├── TEMPLATE_CUSTOMIZATION.md
+│   ├── TEMPLATE_QUICK_START.md
 │   └── (existing certificate files)
 └── firebase.json
 ```
