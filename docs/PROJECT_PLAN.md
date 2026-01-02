@@ -38,7 +38,9 @@ Build an automated web application to:
 **Technology Stack:**
 - Frontend: Vue 3, Vite, Tailwind CSS, Pinia
 - Backend: Firebase (Functions, Firestore, Storage, Authentication)
-- External APIs: Google Sheets API, Email Service (Nodemailer/SendGrid)
+- Authentication: Office 365 (Admin Staff), Google OAuth (Public), eFaas (Public - Future)
+- Email Service: Microsoft Graph API (Office 365)
+- External APIs: Google Sheets API
 
 ### System Components
 
@@ -151,15 +153,17 @@ Build an automated web application to:
 - Track email delivery status
 
 **Tasks:**
-1. Configure email service (Nodemailer/SendGrid)
-2. Create email template with certificate attachment
-3. Implement Firebase Function for sending emails
-4. Add bulk email functionality
-5. Implement email status tracking
-6. Create email logs in Firestore
-7. Add retry mechanism for failed emails
-8. Build email status dashboard
-9. Implement notification system
+1. Configure Microsoft Graph API for Office 365 email
+2. Register application in Azure AD (Family Court tenant)
+3. Configure Mail.Send permissions
+4. Create email template with certificate attachment
+5. Implement Firebase Function for sending emails via Microsoft Graph
+6. Add bulk email functionality
+7. Implement email status tracking
+8. Create email logs in Firestore
+9. Add retry mechanism for failed emails
+10. Build email status dashboard
+11. Implement notification system
 
 **Deliverables:**
 - Certificates can be emailed to participants
@@ -310,12 +314,94 @@ For each participant:
 
 ---
 
+## Email Configuration
+
+### Email Service: Microsoft Graph API (Office 365)
+
+The system uses the organization's Office 365 email service via Microsoft Graph API for sending certificates.
+
+**Benefits:**
+- ✅ Official Family Court email address as sender
+- ✅ Better email deliverability (trusted domain)
+- ✅ No additional email service costs
+- ✅ Unified with Office 365 authentication
+- ✅ Professional appearance
+- ✅ Email tracking in Office 365 admin center
+- ✅ Compliance with organizational email policies
+
+### Azure AD App Registration Setup
+
+**Prerequisites:**
+1. Azure AD admin access for Family Court tenant
+2. Office 365 mailbox: certificates@familycourt.gov.mv (or similar)
+
+**Configuration Steps:**
+1. Register app in Azure AD (Azure Portal)
+2. Grant API Permissions:
+   - `Mail.Send` - Send mail as any user
+   - `Mail.ReadWrite` - Read and write mail (optional, for tracking)
+3. Create client secret or certificate
+4. Note: Application (Client) ID and Tenant ID
+5. Configure Firebase Functions with credentials
+
+### Implementation
+
+```javascript
+// Firebase Function - Send Email via Microsoft Graph API
+const { Client } = require('@microsoft/microsoft-graph-client');
+const { ClientSecretCredential } = require('@azure/identity');
+
+// Initialize Graph client
+const credential = new ClientSecretCredential(
+  process.env.AZURE_TENANT_ID,
+  process.env.AZURE_CLIENT_ID,
+  process.env.AZURE_CLIENT_SECRET
+);
+
+const graphClient = Client.initWithMiddleware({
+  authProvider: {
+    getAccessToken: async () => {
+      const token = await credential.getToken('https://graph.microsoft.com/.default');
+      return token.token;
+    }
+  }
+});
+
+// Send email with certificate
+await graphClient
+  .api('/users/certificates@familycourt.gov.mv/sendMail')
+  .post({
+    message: {
+      subject: 'MAP Certificate - Marriage Awareness Program',
+      body: {
+        contentType: 'HTML',
+        content: emailBodyHTML
+      },
+      toRecipients: [
+        { emailAddress: { address: participant.email, name: participant.name } }
+      ],
+      attachments: [
+        {
+          '@odata.type': '#microsoft.graph.fileAttachment',
+          name: 'MAP_Certificate.pdf',
+          contentType: 'application/pdf',
+          contentBytes: certificatePDFBase64
+        }
+      ]
+    },
+    saveToSentItems: true
+  });
+```
+
+---
+
 ## Email Template
 
+**From:** certificates@familycourt.gov.mv  
 **Subject:** MAP Certificate - Marriage Awareness Program
 
 **Body:**
-```
+```html
 Dear [Participant Name] and [Partner Name],
 
 Congratulations on successfully completing the Marriage Awareness Program!
@@ -336,15 +422,129 @@ Family Court, Maldives
 
 ---
 
+## Authentication & Authorization
+
+### Multi-Provider Authentication Strategy
+
+The system implements role-based authentication with different providers for different user types:
+
+#### 1. Administrative Staff (Family Court Staff)
+- **Provider**: Office 365 / Microsoft Azure AD
+- **Access Level**: Full admin access
+- **Permissions**:
+  - View all registration data from Google Sheets
+  - Approve/reject participants
+  - Generate certificates
+  - Send bulk emails
+  - Manage system settings
+  - View logs and analytics
+- **Implementation**: Firebase Authentication with Microsoft provider
+
+#### 2. Public Users (Participants)
+- **Phase 1 - Google OAuth**:
+  - **Provider**: Google Sign-In
+  - **Access Level**: Participant portal (view-only)
+  - **Permissions**:
+    - View own certificate status
+    - Download own certificate
+    - Update contact information
+  - **Implementation**: Firebase Authentication with Google provider
+
+- **Phase 2 - eFaas Integration** (Future Enhancement):
+  - **Provider**: eFaas (Maldives Government SSO)
+  - **Access Level**: Participant portal (view-only)
+  - **Permissions**: Same as Google OAuth
+  - **Implementation**: Custom Firebase Auth with eFaas API integration
+  - **Benefits**: Unified government identity, better verification
+
+### User Roles & Access Control
+
+```javascript
+// Firestore user document structure
+users/
+  {userId}/
+    - email: string
+    - name: string
+    - role: "admin" | "participant"
+    - provider: "microsoft" | "google" | "efaas"
+    - organization: "family_court" (for admins only)
+    - verified: boolean
+    - created_at: timestamp
+    - last_login: timestamp
+```
+
+### Authentication Flow
+
+#### Admin Login Flow:
+```
+1. User clicks "Staff Login"
+2. Redirected to Microsoft/Office 365 login
+3. Authenticate with Family Court credentials
+4. Firebase verifies token and checks domain (@familycourt.gov.mv)
+5. Assign "admin" role if domain matches
+6. Redirect to admin dashboard
+```
+
+#### Participant Login Flow:
+```
+1. User clicks "Participant Login"
+2. Choose provider: Google or eFaas (future)
+3. Authenticate with chosen provider
+4. Firebase verifies token
+5. Check if email exists in participants database
+6. Assign "participant" role
+7. Redirect to participant portal
+```
+
+### Firebase Security Rules
+
+```javascript
+// Firestore Rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Participants collection - Admin full access, Participants read own only
+    match /participants/{participantId} {
+      allow read, write: if request.auth != null && 
+                          request.auth.token.role == 'admin';
+      allow read: if request.auth != null && 
+                     request.auth.token.role == 'participant' &&
+                     request.auth.token.email == resource.data.email;
+    }
+    
+    // Settings - Admin only
+    match /settings/{document=**} {
+      allow read, write: if request.auth != null && 
+                          request.auth.token.role == 'admin';
+    }
+    
+    // Email logs - Admin only
+    match /email_logs/{document=**} {
+      allow read, write: if request.auth != null && 
+                          request.auth.token.role == 'admin';
+    }
+  }
+}
+```
+
+---
+
 ## Security Considerations
 
-1. **Authentication**: Only authorized staff can access admin dashboard
-2. **Google Sheets API**: Use service account with read-only access
-3. **Firestore Rules**: Restrict write access to authenticated users only
-4. **Firebase Storage Rules**: Only authenticated users can read/write
-5. **Email**: Use verified sender email address
-6. **Environment Variables**: Store API keys securely
-7. **Rate Limiting**: Prevent abuse of email sending
+1. **Multi-Provider Authentication**: 
+   - Office 365 for administrative staff (domain-restricted)
+   - Google OAuth for public participants
+   - eFaas SSO for future government integration
+2. **Role-Based Access Control (RBAC)**: Firestore rules enforce role-based permissions
+3. **Domain Restriction**: Only @familycourt.gov.mv emails get admin access
+4. **Google Sheets API**: Use service account with read-only access
+5. **Firestore Rules**: Strict rules based on user roles and email verification
+6. **Firebase Storage Rules**: Role-based access to certificate files
+7. **Email**: Use verified sender email address
+8. **Environment Variables**: Store API keys and secrets securely
+9. **Rate Limiting**: Prevent abuse of email sending and API calls
+10. **Audit Logs**: Track all admin actions and certificate generations
 
 ---
 
@@ -360,13 +560,24 @@ Family Court, Maldives
 
 ## Future Enhancements
 
-1. **SMS Notifications**: Send SMS with certificate link
-2. **Participant Portal**: Let participants download certificates themselves
-3. **Analytics Dashboard**: Track program statistics
-4. **Certificate Verification**: Public portal to verify certificate authenticity
-5. **Multi-language**: Dhivehi language support
-6. **Batch Import**: Upload CSV to bulk approve participants
-7. **Reminder System**: Send reminders to complete registration
+### Phase 1 Enhancements
+1. **Participant Portal**: Self-service portal for participants to view and download certificates
+2. **Google OAuth Integration**: Allow participants to login and access their certificates
+3. **Certificate Verification**: Public portal to verify certificate authenticity via QR code
+
+### Phase 2 Enhancements
+4. **eFaas Integration**: Maldives Government SSO for participant authentication
+5. **SMS Notifications**: Send SMS with certificate link using local SMS gateway
+6. **Multi-language Support**: Dhivehi language support for certificates and interface
+7. **Analytics Dashboard**: Track program statistics, participation rates, and trends
+
+### Phase 3 Enhancements
+8. **Batch Import**: Upload CSV to bulk approve participants
+9. **Advanced Reporting**: Generate reports on certificate issuance, email delivery rates
+10. **Reminder System**: Automated reminders for incomplete registrations
+11. **Certificate Templates**: Multiple certificate designs for different program types
+12. **Digital Signatures**: Integrate digital signatures for certificate authenticity
+13. **API Integration**: REST API for integration with other Family Court systems
 
 ---
 
@@ -391,10 +602,17 @@ Family Court, Maldives
 - Hosting: Free tier
 
 ### External Services
-- SendGrid: Free tier (100 emails/day) or paid plan
+- Microsoft Graph API (Office 365): Included in existing Office 365 subscription (no additional cost)
 - Google Sheets API: Free
+- Azure AD App Registration: Free
 
-**Estimated Monthly Cost: $0 - $20** (depending on usage)
+**Estimated Monthly Cost: $0** (all services covered by existing subscriptions)
+
+### Cost Savings
+- ✅ No SendGrid or email service costs
+- ✅ Uses existing Office 365 subscription
+- ✅ Firebase free tier sufficient for initial deployment
+- ✅ Scalable within organizational budget
 
 ---
 
@@ -427,5 +645,5 @@ Family Court, Maldives
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: January 1, 2026*
+*Document Version: 1.2*  
+*Last Updated: January 2, 2026*

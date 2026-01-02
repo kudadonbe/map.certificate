@@ -25,9 +25,13 @@ Automate the certificate generation and distribution process:
 
 - **Frontend**: Vue 3 + Vite + Tailwind CSS + Pinia
 - **Backend**: Firebase (Functions, Firestore, Storage, Auth)
+- **Authentication**: 
+  - Office 365 (Admin Staff)
+  - Google OAuth (Public Users)
+  - eFaas (Future - Government SSO)
+- **Email Service**: Microsoft Graph API (Office 365)
 - **Data Source**: Google Sheets API
 - **PDF Generation**: Puppeteer/PDFKit
-- **Email Service**: Nodemailer/SendGrid
 
 ### Data Flow
 
@@ -47,10 +51,13 @@ Firebase Storage (PDF Storage) + Email Delivery
 
 ### Phase 1: Setup & Data Sync
 - [ ] Vue + Vite + Firebase project initialization
+- [ ] Multi-provider authentication setup
+  - [ ] Office 365 / Microsoft login for admin staff
+  - [ ] Google OAuth for participants
+  - [ ] Role-based access control (RBAC)
 - [ ] Google Sheets API integration
 - [ ] Admin dashboard to view registration data
 - [ ] Approve and sync participants to Firestore
-- [ ] Firebase Authentication for admin access
 
 ### Phase 2: Certificate Generation
 - [ ] Certificate template design (HTML/CSS)
@@ -64,6 +71,12 @@ Firebase Storage (PDF Storage) + Email Delivery
 - [ ] Email status tracking
 - [ ] Retry mechanism for failed emails
 - [ ] Email delivery logs
+
+### Phase 4: Participant Portal (Future)
+- [ ] Participant login with Google/eFaas
+- [ ] View certificate status
+- [ ] Download certificates
+- [ ] Certificate verification system
 
 ## Database Structure
 
@@ -86,13 +99,16 @@ participants/
 
 ## Benefits
 
+- ✅ **Multi-provider Authentication**: Secure login for staff (Office 365) and participants (Google/eFaas)
+- ✅ **Role-based Access Control**: Separate admin and participant portals
 - ✅ Modern, professional admin interface
 - ✅ Real-time status updates
 - ✅ Scalable and secure (Firebase)
 - ✅ Mobile-responsive dashboard
 - ✅ Audit trail for certificate generation
-- ✅ Reduced manual work
+- ✅ Reduced manual work (90% time savings)
 - ✅ Faster certificate delivery
+- ✅ Self-service participant portal (future)
 
 ## Getting Started
 
@@ -101,7 +117,8 @@ participants/
 - Node.js (v18+)
 - Firebase account
 - Google Cloud Project (for Sheets API)
-- Gmail/SendGrid account for email delivery
+- Office 365 account with admin access (for Azure AD app registration)
+- Microsoft Graph API credentials
 
 ### Installation
 
@@ -129,9 +146,17 @@ npm run dev
 1. Create a Firebase project
 2. Enable Firestore Database
 3. Enable Firebase Storage
-4. Enable Firebase Authentication
+4. Enable Firebase Authentication (Google & Microsoft providers)
 5. Deploy Firebase Functions
 6. Configure Google Sheets API credentials
+
+### Office 365 / Azure AD Setup
+
+1. Register application in Azure AD (Azure Portal)
+2. Grant API permissions: `Mail.Send`, `Mail.ReadWrite`
+3. Create client secret
+4. Configure service account email: certificates@familycourt.gov.mv
+5. Add credentials to Firebase Functions environment variables
 
 ## Project Structure
 
