@@ -96,7 +96,7 @@
             <h3 class="text-lg font-semibold text-gray-900">Border</h3>
             <label class="flex items-center">
               <input 
-                v-model="template.border.enabled" 
+                v-model="template.border!.enabled" 
                 type="checkbox"
                 class="mr-2 rounded"
               />
@@ -337,7 +337,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import type { CertificateTemplate, SignatureElement, StampElement } from '@/types/template.types';
+import type { CertificateTemplate } from '@/types/template.types';
 import { useTemplateStore } from '@/stores/template.store';
 
 const props = defineProps<{
@@ -361,13 +361,24 @@ const sampleData = {
   issueDate: new Date('2026-01-20'),
 };
 
-const certificateStyle = computed(() => ({
-  backgroundColor: template.value.background.type === 'color' ? template.value.background.value : '#ffffff',
-  backgroundImage: template.value.background.image ? `url(${template.value.background.image})` : undefined,
-  border: template.value.border?.enabled 
-    ? `${template.value.border.width}px ${template.value.border.style} ${template.value.border.color}`
-    : 'none',
-}));
+const certificateStyle = computed(() => {
+  const bg = template.value.background;
+  let backgroundColor: string = '#ffffff';
+  
+  if (bg.type === 'color') {
+    backgroundColor = typeof bg.value === 'string' ? bg.value : '#ffffff';
+  } else if (bg.type === 'gradient' && typeof bg.value === 'object') {
+    backgroundColor = `linear-gradient(${bg.value.angle || 0}deg, ${bg.value.from}, ${bg.value.to})`;
+  }
+  
+  return {
+    backgroundColor,
+    backgroundImage: bg.image ? `url(${bg.image})` : undefined,
+    border: template.value.border?.enabled 
+      ? `${template.value.border.width}px ${template.value.border.style} ${template.value.border.color}`
+      : 'none',
+  };
+});
 
 function createEmptyTemplate(): CertificateTemplate {
   return {
@@ -477,7 +488,7 @@ function getElementStyle(element: any) {
   };
 }
 
-function getElementComponent(type: string) {
+function getElementComponent(_type: string) {
   return 'div'; // Placeholder - implement actual components
 }
 

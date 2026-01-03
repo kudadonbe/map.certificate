@@ -91,13 +91,7 @@ export const DEFAULT_A4_PORTRAIT_TEMPLATE: Omit<CertificateTemplate, 'id' | 'cre
       align: 'center',
       language: 'dv',
     },
-    {
-      id: 'divider',
-      type: 'line',
-      position: { x: 65, y: 92, width: 80, height: 1 },
-      zIndex: 5,
-      visible: true,
-    },
+
     {
       id: 'body-intro',
       type: 'text',

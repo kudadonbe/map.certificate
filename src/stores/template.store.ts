@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import type { CertificateTemplate, SignatureElement, StampElement } from '../types/template.types';
+import type { CertificateTemplate } from '../types/template.types';
 import { 
   collection, 
   doc, 
@@ -10,7 +10,7 @@ import {
   updateDoc, 
   deleteDoc,
   query,
-  where,
+
   orderBy,
   Timestamp 
 } from 'firebase/firestore';

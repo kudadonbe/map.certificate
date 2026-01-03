@@ -27,7 +27,11 @@
         <div class="h-48 bg-gray-100 relative">
           <div 
             class="w-full h-full flex items-center justify-center"
-            :style="{ backgroundColor: template.background.value }"
+            :style="{ 
+              backgroundColor: typeof template.background.value === 'string' 
+                ? template.background.value 
+                : '#ffffff' 
+            }"
           >
             <span class="text-4xl text-gray-400">📄</span>
           </div>
