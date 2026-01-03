@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { BellIcon, UserCircleIcon, ChevronDownIcon } from '@heroicons/vue/24/outline';
 
@@ -95,7 +95,7 @@ interface NavLink {
   label: string;
 }
 
-const props = defineProps<{
+defineProps<{
   navLinks: NavLink[];
   userName?: string;
   hasNotifications?: boolean;
