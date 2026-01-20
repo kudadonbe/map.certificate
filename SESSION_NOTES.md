@@ -359,10 +359,11 @@ None currently. Build succeeded with no errors.
 ## Repository Status
 
 - **Branch:** master
-- **Last Commit:** 91c7c5d - "fix: Resolve TypeScript build errors"
+- **Last Commit:** 9d69b0e - "docs: Add Firebase deployment instructions"
 - **Remote:** Up to date with origin/master
 - **Build:** ✅ Successful (dist/ folder ready)
-- **Deploy:** ⏳ Pending (Firebase CLI installation in progress)
+- **Firebase CLI:** ✅ Installed
+- **Deploy:** ⏳ Requires manual login (see DEPLOY.md)
 
 ## Session Statistics
 
@@ -382,20 +383,60 @@ None currently. Build succeeded with no errors.
 
 **Total estimated time:** ~40 minutes to complete deployment and testing
 
+## Manual Deployment Required
+
+Firebase CLI is installed but requires manual login. Follow these steps:
+
+### Step 1: Login to Firebase
+
+```bash
+firebase login
+```
+
+This will open a browser for authentication.
+
+### Step 2: Set Active Project
+
+```bash
+firebase use map-certificate
+```
+
+### Step 3: Deploy
+
+```bash
+firebase deploy --only hosting
+```
+
+**Or use npm script:**
+
+```bash
+npm run deploy:firebase
+```
+
+### Step 4: Fix Production Login Issue
+
+After deployment, login might not work. Fix it:
+
+1. **Add Authorized Domain:**
+   - Go to: https://console.firebase.google.com/project/map-certificate/authentication/settings
+   - Scroll to "Authorized domains"
+   - Click "Add domain"
+   - Add: `map-certificate.firebaseapp.com`
+   - Click "Add"
+
+2. **Test Login:**
+   - Visit: https://map-certificate.firebaseapp.com/login
+   - Click "Sign in with Google"
+   - Should work now!
+
+**Full deployment guide:** See `DEPLOY.md`
+**Troubleshooting:** See `TROUBLESHOOTING.md`
+
 ## Quick Commands for Tomorrow
 
 ```bash
-# Check Firebase CLI
-firebase --version
-
-# Login (if needed)
-firebase login
-
-# Deploy
+# Deploy to Firebase
 firebase deploy --only hosting
-
-# Or use npm script
-npm run deploy:firebase
 
 # Check configuration
 node scripts/checkOffice365Config.js
