@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
 
         console.log('✅ Login successful!');
         console.log('👤 User:', redirectResult.user.email);
-        console.log('🔑 Role:', redirectResult.user.role);
+        console.log('🔑 Role:', redirectResult.user.primaryRole);
 
         // Redirect to home page after successful login
         router.push('/');
@@ -92,7 +92,7 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = appUser;
             console.log('✅ User session restored');
             console.log('👤 User:', appUser.email);
-            console.log('🔑 Role:', appUser.role);
+            console.log('🔑 Role:', appUser.primaryRole);
             // Update last login timestamp
             await AuthService.updateLastLogin(fbUser.uid);
           } else {

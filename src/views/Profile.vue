@@ -126,7 +126,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import { getPrimaryRoleLabel, getAllRoleLabels } from '@/utils/role.helpers';
+import { getPrimaryRoleLabel } from '@/utils/role.helpers';
 import {
   UserIcon,
   ArrowRightOnRectangleIcon,
@@ -135,10 +135,9 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
-const { user, logout: authLogout, userRoles, isAdmin, isParticipant, isPublic } = useAuth();
+const { user, logout: authLogout, userRoles } = useAuth();
 
 const roleLabel = computed(() => getPrimaryRoleLabel(user.value));
-const allRoles = computed(() => getAllRoleLabels(user.value).join(', '));
 
 function formatDate(date: Date | undefined): string {
   if (!date) return 'Unknown';

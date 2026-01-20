@@ -1,5 +1,3 @@
-import type { AuthErrorCode } from '@/types/auth.types';
-
 /**
  * Map error codes to user-friendly error messages
  */

@@ -7,7 +7,7 @@ import type { UserRole } from '@/types/auth.types';
  */
 export async function requireAuth(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();
@@ -32,7 +32,7 @@ export async function requireAuth(
  */
 export async function requireAdmin(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();
@@ -65,7 +65,7 @@ export async function requireAdmin(
  */
 export async function requireParticipant(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();
@@ -99,7 +99,7 @@ export async function requireParticipant(
 export function requireRole(role: UserRole) {
   return async (
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
     const authStore = useAuthStore();
@@ -133,7 +133,7 @@ export function requireRole(role: UserRole) {
 export function requireAnyRole(roles: UserRole[]) {
   return async (
     to: RouteLocationNormalized,
-    from: RouteLocationNormalized,
+    _from: RouteLocationNormalized,
     next: NavigationGuardNext
   ) => {
     const authStore = useAuthStore();
@@ -165,8 +165,8 @@ export function requireAnyRole(roles: UserRole[]) {
  * Guest only - redirect authenticated users to home page
  */
 export async function guestOnly(
-  to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();

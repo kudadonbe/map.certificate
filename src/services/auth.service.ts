@@ -20,7 +20,6 @@ import { auth, db, googleProvider, microsoftProvider } from '@/firebase';
 import type {
   AppUser,
   LoginResult,
-  AuthErrorCode,
   AdminWhitelist
 } from '@/types/auth.types';
 import { AuthErrorCode as ErrorCode } from '@/types/auth.types';
@@ -82,7 +81,8 @@ export class AuthService {
         }
 
         console.log('✅ Email is whitelisted, creating user...');
-        const user = await this.createOrUpdateUser(result, 'admin', 'microsoft');
+        // Admin gets both 'admin' and 'public' roles
+        const user = await this.createOrUpdateUser(result, ['admin', 'public'], 'microsoft');
         console.log('✅ Admin user created/updated');
         return { success: true, user };
 
