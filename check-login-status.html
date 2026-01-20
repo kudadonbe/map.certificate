@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Debug Helper</title>
+</head>
+<body>
+    <h1>Open Browser Console (F12) and check for errors</h1>
+    <h2>Common Issues Checklist:</h2>
+    <ul>
+        <li>✓ Is Google/Microsoft auth enabled in Firebase Console?</li>
+        <li>✓ Is your email in the admin whitelist (for Office 365)?</li>
+        <li>✓ Does a participant document exist with your email (for Google)?</li>
+        <li>✓ Are there any errors in browser console?</li>
+    </ul>
+    
+    <h2>Quick Tests:</h2>
+    <p>1. Open http://localhost:5173/login</p>
+    <p>2. Open DevTools (F12) > Console tab</p>
+    <p>3. Click login button</p>
+    <p>4. Look for red error messages</p>
+    
+    <h2>Firebase Console Check:</h2>
+    <p>Go to: https://console.firebase.google.com/</p>
+    <p>Project: map-certificate</p>
+    <p>Authentication > Sign-in method</p>
+    <p>Make sure Google and Microsoft show "Enabled" with green checkmark</p>
+</body>
+</html>

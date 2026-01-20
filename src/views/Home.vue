@@ -1,5 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <!-- Debug Auth Panel (only in development) -->
+    <DebugAuthPanel v-if="isDev" />
     <!-- Navigation -->
     <nav class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -7,14 +9,35 @@
           <div class="flex items-center">
             <h1 class="text-2xl font-bold text-indigo-600">MAP Certificate</h1>
           </div>
-          <div class="flex gap-4">
+
+          <!-- Logged In Navigation -->
+          <div v-if="isAuthenticated" class="flex items-center gap-4">
+            <span class="text-gray-700">Welcome, {{ userDisplayName }}!</span>
             <button
-              @click="navigateToAdmin"
+              @click="navigateToPortal"
               class="px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
             >
-              Admin Portal
+              {{ isAdmin ? 'Admin Dashboard' : isParticipant ? 'My Portal' : 'My Profile' }}
             </button>
             <button
+              @click="logout"
+              class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors flex items-center gap-2"
+            >
+              <ArrowRightOnRectangleIcon class="w-5 h-5" />
+              Logout
+            </button>
+          </div>
+
+          <!-- Logged Out Navigation -->
+          <div v-else class="flex gap-4">
+            <button
+              @click="navigateToLogin"
+              class="px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+            >
+              Admin Login
+            </button>
+            <button
+              @click="navigateToLogin"
               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Participant Login
@@ -31,25 +54,38 @@
           Marriage Awareness Program
         </h2>
         <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Automated certificate generation and distribution system for the Marriage Awareness Program held by Family Court, Maldives
+          Access your Marriage Awareness Program certificates and information online. Login to view your certificates, enroll in sessions, and manage your program participation.
         </p>
-        <div class="flex gap-4 justify-center">
+
+        <!-- Logged In CTAs -->
+        <div v-if="isAuthenticated" class="flex gap-4 justify-center">
           <button
-            @click="navigateToAdmin"
+            @click="navigateToPortal"
+            class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
+          >
+            {{ isAdmin ? 'Go to Admin Dashboard' : isParticipant ? 'Go to My Portal' : 'Go to My Profile' }}
+          </button>
+        </div>
+
+        <!-- Logged Out CTAs -->
+        <div v-else class="flex gap-4 justify-center">
+          <button
+            @click="navigateToLogin"
             class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
           >
             Get Started
           </button>
-          <button
+          <a
+            href="#features"
             class="px-8 py-3 bg-white text-indigo-600 text-lg font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-lg border-2 border-indigo-600"
           >
             Learn More
-          </button>
+          </a>
         </div>
       </div>
 
       <!-- Features Grid -->
-      <div class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div id="features" class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="bg-white rounded-xl p-8 shadow-lg">
           <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
             <DocumentIcon class="w-6 h-6 text-indigo-600" />
@@ -94,7 +130,7 @@
             Secure Authentication
           </h3>
           <p class="text-gray-600">
-            Multi-provider authentication with Office 365, Google OAuth, and eFaas
+            Multi-provider authentication with Office 365 for admins and Google OAuth for participants
           </p>
         </div>
 
@@ -156,18 +192,35 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { 
-  DocumentIcon, 
-  EnvelopeIcon, 
-  UserGroupIcon, 
+import { useAuth } from '@/composables/useAuth';
+import DebugAuthPanel from '@/components/layout/DebugAuthPanel.vue';
+import {
+  DocumentIcon,
+  EnvelopeIcon,
+  UserGroupIcon,
   ShieldCheckIcon,
   CloudIcon,
-  LanguageIcon 
+  LanguageIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
+const { isAuthenticated, isAdmin, isParticipant, isPublic, userDisplayName, logout } = useAuth();
+const isDev = import.meta.env.DEV; // Only show in development mode
 
-function navigateToAdmin() {
-  router.push('/admin/templates');
+function navigateToPortal() {
+  if (isAdmin.value) {
+    router.push('/admin/dashboard');
+  } else if (isParticipant.value) {
+    router.push('/participant/portal');
+  } else if (isPublic.value) {
+    router.push('/profile');
+  } else {
+    router.push('/login');
+  }
+}
+
+function navigateToLogin() {
+  router.push('/login');
 }
 </script>
