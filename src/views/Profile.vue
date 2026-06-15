@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="min-h-screen bg-gradient-to-br from-fc-25 to-fc-50">
     <!-- Navigation -->
     <nav class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center">
-            <h1 class="text-2xl font-bold text-indigo-600">MAP Certificate</h1>
+            <h1 class="text-2xl font-bold text-fc-700">MAP Certificate</h1>
           </div>
           <div class="flex items-center gap-4">
             <button
               @click="$router.push('/')"
-              class="px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+              class="px-4 py-2 text-fc-700 hover:text-fc-900 font-medium transition-colors"
             >
               Home
             </button>
@@ -31,19 +31,17 @@
       <!-- Profile Header -->
       <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
         <div class="flex items-center gap-6 mb-6">
-          <div class="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center overflow-hidden">
-            <img
-              v-if="user?.photoURL"
-              :src="user.photoURL"
-              :alt="user.displayName || 'User'"
-              class="w-full h-full object-cover"
-            />
-            <UserIcon v-else class="w-12 h-12 text-indigo-600" />
-          </div>
+          <ProfileAvatar
+            :photo-url="user?.photoURL"
+            :display-name="user?.displayName"
+            :email="user?.email"
+            size-class="h-24 w-24"
+            text-class="text-2xl"
+          />
           <div>
             <h2 class="text-3xl font-bold text-gray-900">{{ user?.displayName || 'User' }}</h2>
             <p class="text-gray-600">{{ user?.email }}</p>
-            <span class="inline-block mt-2 px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full">
+            <span class="inline-block mt-2 px-3 py-1 bg-fc-50 text-fc-800 text-sm font-medium rounded-full">
               {{ roleLabel }}
             </span>
           </div>
@@ -78,7 +76,7 @@
                 <span
                   v-for="role in userRoles"
                   :key="role"
-                  class="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full"
+                  class="inline-block px-3 py-1 bg-fc-50 text-fc-800 text-sm font-medium rounded-full"
                 >
                   {{ role.charAt(0).toUpperCase() + role.slice(1) }}
                 </span>
@@ -93,7 +91,7 @@
         <!-- Participant Info -->
         <div class="bg-white rounded-xl shadow-lg p-6">
           <div class="flex items-center gap-3 mb-4">
-            <DocumentTextIcon class="w-6 h-6 text-indigo-600" />
+            <DocumentTextIcon class="w-6 h-6 text-fc-700" />
             <h3 class="text-lg font-semibold text-gray-900">Certificate Status</h3>
           </div>
           <p v-if="user?.participantId" class="text-gray-600">
@@ -107,7 +105,7 @@
         <!-- Account Info -->
         <div class="bg-white rounded-xl shadow-lg p-6">
           <div class="flex items-center gap-3 mb-4">
-            <InformationCircleIcon class="w-6 h-6 text-indigo-600" />
+            <InformationCircleIcon class="w-6 h-6 text-fc-700" />
             <h3 class="text-lg font-semibold text-gray-900">Account Information</h3>
           </div>
           <p class="text-gray-600 mb-3">
@@ -127,8 +125,8 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { getPrimaryRoleLabel } from '@/utils/role.helpers';
+import ProfileAvatar from '@/components/layout/ProfileAvatar.vue';
 import {
-  UserIcon,
   ArrowRightOnRectangleIcon,
   DocumentTextIcon,
   InformationCircleIcon

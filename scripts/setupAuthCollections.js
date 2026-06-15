@@ -23,6 +23,7 @@ async function setupAuthCollections() {
     const whitelistRef = doc(db, 'settings', 'admin_whitelist');
     await setDoc(whitelistRef, {
       emails: [
+        'hussain.shareef@familycourt.gov.mv',
         'admin@familycourt.gov.mv',
         // Add additional admin emails here
       ],

@@ -23,6 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Local agent artifacts
+/.claude/settings.local.json
+/tmpclaude-*-cwd
+/-
+
 # Environment variables
 .env
 .env.local

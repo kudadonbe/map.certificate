@@ -1,17 +1,15 @@
 <template>
-  <div class="template-manager p-6">
+  <MapLayout>
     <div class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Certificate Templates</h1>
         <p class="text-sm text-gray-600 mt-1">Create and manage customizable certificate templates</p>
       </div>
-      <button 
+      <button
         @click="createNewTemplate"
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium flex items-center gap-2"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium flex items-center gap-2"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+        <PlusIcon class="w-5 h-5" />
         New Template
       </button>
     </div>
@@ -24,16 +22,9 @@
         class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
       >
         <!-- Preview Thumbnail -->
-        <div class="h-48 bg-gray-100 relative">
-          <div 
-            class="w-full h-full flex items-center justify-center"
-            :style="{ 
-              backgroundColor: typeof template.background.value === 'string' 
-                ? template.background.value 
-                : '#ffffff' 
-            }"
-          >
-            <span class="text-4xl text-gray-400">📄</span>
+        <div class="h-48 bg-gray-100 relative overflow-hidden p-3">
+          <div class="flex h-full items-center">
+            <TemporaryCertificate v-bind="getTemplatePreview(template)" />
           </div>
           <div v-if="template.isDefault" class="absolute top-2 right-2 px-2 py-1 bg-blue-600 text-white text-xs rounded-full">
             Default
@@ -62,34 +53,28 @@
             >
               Edit
             </button>
-            <button 
+            <button
               @click="duplicateTemplate(template.id)"
               class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
               title="Duplicate"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
+              <DocumentDuplicateIcon class="w-4 h-4" />
             </button>
-            <button 
+            <button
               v-if="!template.isDefault"
               @click="setAsDefault(template.id)"
               class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
               title="Set as Default"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg>
+              <StarIcon class="w-4 h-4" />
             </button>
-            <button 
+            <button
               @click="confirmDelete(template.id)"
               class="px-3 py-1.5 bg-red-50 text-red-700 rounded-md hover:bg-red-100 text-sm"
               title="Delete"
               :disabled="template.isDefault"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
+              <TrashIcon class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -97,14 +82,12 @@
 
       <!-- Empty State -->
       <div v-if="templates.length === 0" class="col-span-full text-center py-12">
-        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+        <DocumentTextIcon class="w-16 h-16 mx-auto text-gray-400 mb-4" />
         <h3 class="text-lg font-medium text-gray-900 mb-2">No templates yet</h3>
         <p class="text-gray-600 mb-4">Create your first certificate template to get started</p>
-        <button 
+        <button
           @click="createNewTemplate"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
           Create Template
         </button>
@@ -140,13 +123,23 @@
         </div>
       </div>
     </div>
-  </div>
+  </MapLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useTemplateStore } from '@/stores/template.store';
 import TemplateEditor from '@/components/template/TemplateEditor.vue';
+import TemporaryCertificate from '@/components/certificate/TemporaryCertificate.vue';
+import MapLayout from '@/layouts/MapLayout.vue';
+import type { CertificateTemplate, TextElement } from '@/types/template.types';
+import {
+  PlusIcon,
+  DocumentDuplicateIcon,
+  StarIcon,
+  TrashIcon,
+  DocumentTextIcon,
+} from '@heroicons/vue/24/outline';
 
 const templateStore = useTemplateStore();
 const showEditor = ref(false);
@@ -155,6 +148,32 @@ const showDeleteModal = ref(false);
 const deletingTemplateId = ref<string | null>(null);
 
 const templates = computed(() => templateStore.templates);
+
+function getTemplatePreview(template: CertificateTemplate) {
+  const text = (id: string, fallback: string) => {
+    const element = template.elements.find(
+      item => item.id === id && item.type === 'text',
+    ) as TextElement | undefined;
+    return element?.content || fallback;
+  };
+
+  return {
+    participantName: 'ހުސައިން އަލީ',
+    idNumber: 'A123456',
+    issueDate: '14 ޖޫން 2026',
+    organization: text('header-dv-1', 'ފެމިލީ ކޯޓު'),
+    location: text('header-dv-2', 'މާލެ، ދިވެހިރާއްޖެ'),
+    title: text('title-dv', 'ކާވެންޏަށް ހޭލުންތެރިކުރުމުގެ ޕްރޮގްރާމު ފުރިހަމަކުރިކަމުގެ ލިޔުން'),
+    textBeforeName: text('body-dv-1', 'މި ލިޔުމަކީ'),
+    idLabel: text('id-label', 'އައިޑީކާޑު ނަންބަރު'),
+    textAfterId: text('body-dv-2', 'ކާވެންޏަށް ހޭލުންތެރިކުރުމުގެ ޕްރޮގްރާމު ފުރިހަމަކޮށްފައިވާތީ ދޫކޮށްފައިވާ ލިޔުމެކެވެ.'),
+    signatoryName: template.signatures[0]?.signatoryName || 'އަޙްމަދު ސައްފާނު',
+    signatoryRole: template.signatures[0]?.signatoryTitle || text('signature-label', 'ޕްރޮގްރާމް ކޯޑިނޭޓަރ'),
+    stampLabel: text('footer', 'ފެމިލީ ކޯޓު'),
+    signatureUrl: template.signatures[0]?.url || '/certificate-assets/signature-template.png',
+    sealUrl: template.stamps[0]?.url || '/certificate-assets/seal.jpg',
+  };
+}
 
 onMounted(async () => {
   await templateStore.loadTemplates();

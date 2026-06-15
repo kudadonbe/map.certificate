@@ -21,9 +21,9 @@
               {{ template.name }} ({{ template.size }} {{ template.orientation }})
             </option>
           </select>
-          <router-link 
-            to="/admin/templates"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap"
+          <router-link
+            to="/map/templates"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 whitespace-nowrap"
           >
             Manage Templates
           </router-link>

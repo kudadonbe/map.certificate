@@ -1,289 +1,306 @@
-# MAP Certificate - Marriage Awareness Program Certificate Generator
+# AQD - Family Court Digital Ecosystem
 
-## Project Overview
+## Overview
 
-An automated certificate generation and email distribution system for the Marriage Awareness Program (MAP) held by Family Court, Maldives.
+**AQD** (aqd.familycourt.gov.mv) is the digital ecosystem for Family Court, Maldives. It serves as a unified platform connecting the public to court services and managing internal office operations.
 
-## Current Setup
+### Vision
 
-The Marriage Awareness Program is currently conducted physically:
+```
+aqd.familycourt.gov.mv
+├── Core Platform
+│   ├── Authentication (Office 365 / Google)
+│   ├── User Management & Groups
+│   ├── Security Policies
+│   └── Shared Services
+│
+├── MAP Module (Marriage Awareness Program)
+│   ├── Certificate Generation
+│   ├── Participant Management
+│   └── Email Distribution
+│
+├── Future Modules
+│   ├── Case Management
+│   ├── Document Portal
+│   └── Public Services
+│
+└── Public Portal
+    ├── Service Information
+    ├── Certificate Verification
+    └── Participant Access
+```
 
-1. **Registration Process**: Couples submit registration forms via familycourt.gov.mv (WordPress website)
-2. **Data Collection**: Form submissions are automatically stored in Google Sheets using a WordPress plugin
-3. **Manual Certificate Process**: Certificates are currently managed manually using Word/Excel documents
-
-## Project Goal
-
-Automate the certificate generation and distribution process:
-- Generate PDF certificates for selected/approved participants
-- Email all generated certificates with one click
-- Track certificate generation and email delivery status
-
-## Solution Architecture
-
-### Technology Stack
+## Technology Stack
 
 - **Frontend**: Vue 3 + Vite + Tailwind CSS + Pinia
-- **Backend**: Firebase (Functions, Firestore, Storage, Auth)
-- **Authentication**: 
-  - Office 365 (Admin Staff)
-  - Google OAuth (Public Users)
-  - eFaas (Future - Government SSO)
-- **Email Service**: Microsoft Graph API (Office 365)
-- **Data Source**: Google Sheets API
-- **PDF Generation**: Puppeteer/PDFKit
+- **Backend**: Firebase (Firestore, Storage, Auth)
+- **Authentication**:
+  - Office 365 (Family Court Staff - `@familycourt.gov.mv`)
+  - Google OAuth (Public Users / Participants)
+- **Email Service**: Microsoft Graph API
+- **PDF Generation**: Puppeteer/PDFKit (Firebase Functions)
 
-### Data Flow
+## Authentication
+
+### Domain-Based Access
+
+| Provider | Domain | User Type |
+|----------|--------|-----------|
+| Office 365 | `@familycourt.gov.mv` | Officer (Staff) |
+| Google | Any | Public / Participant |
+
+### User Groups
+
+User permissions are managed through **security groups** stored in Firestore:
 
 ```
-Google Sheets (Registration Data)
-    ↓
-Firebase Firestore (Approved Participants)
-    ↓
-Vue Admin Dashboard (Selection & Trigger)
-    ↓
-Firebase Functions (PDF Generation + Email)
-    ↓
-Firebase Storage (PDF Storage) + Email Delivery
+user_groups/
+  {groupId}/
+    - name: string
+    - permissions: string[]
+    - members: string[] (user UIDs)
 ```
 
-## Features
+Roles are assigned through group membership, allowing flexible permission management.
 
-### ✨ New: Certificate Template Customization System
+## Modules
 
-- **Visual Template Editor**: Create and customize certificate templates with live preview
-- **Dual View Modes**: Preview certificates in both A4 print format and mobile-first digital view
-- **Flexible Layouts**: Support for portrait/landscape, A4/Letter sizes
-- **Customizable Design**:
-  - Background colors, gradients, and images
-  - Borders with multiple styles (solid, dashed, dotted, double)
-  - Theme colors (primary, secondary, accent, text)
-  - Custom fonts with size, weight, and color controls
-- **Signatures & Stamps**: 
-  - Add multiple signatures with signatory names and titles
-  - Upload official seals and stamps
-  - Position and customize opacity
-- **Bilingual Support**: Separate elements for English and Dhivehi text
-- **Template Management**: Create, edit, duplicate, delete, and set default templates
-- **Asset Storage**: Secure upload and management of signatures, stamps, and backgrounds in Firebase Storage
+### MAP Module (Current)
 
-[📖 Full Template Documentation](docs/TEMPLATE_CUSTOMIZATION.md)
+The Marriage Awareness Program Certificate System:
 
-### Phase 1: Setup & Data Sync
-- [ ] Vue + Vite + Firebase project initialization
-- [ ] Multi-provider authentication setup
-  - [ ] Office 365 / Microsoft login for admin staff
-  - [ ] Google OAuth for participants
-  - [ ] Role-based access control (RBAC)
-- [ ] Google Sheets API integration
-- [ ] Admin dashboard to view registration data
-- [ ] Approve and sync participants to Firestore
-- [ ] Firebase Storage setup for PDFs and assets
+- **Participant Management**: Track program participants
+- **Certificate Templates**: Visual template editor with bilingual support
+- **Certificate Generation**: Bulk PDF generation
+- **Email Distribution**: Automated certificate delivery via Microsoft Graph
+- **Participant Portal**: Self-service certificate access
 
-### Phase 2: Data Management & Verification
-- [ ] Participant profile update form (bilingual: English & Dhivehi)
-- [ ] Staff verification interface
-- [ ] Profile update review and approval workflow
-- [ ] Bilingual data validation
-- [ ] Status management system
+[View MAP Documentation](docs/MAP_MODULE.md)
 
-### Phase 3: Certificate Generation
-- [ ] Bilingual certificate template design (HTML/CSS)
-- [ ] Firebase Function for PDF generation
-- [ ] Certificate preview functionality
-- [ ] Store generated PDFs in Firebase Storage
-- [ ] Asset management (logos, seals, signatures)
+### Future Modules
 
-### Phase 4: Email Automation
-- [ ] Microsoft Graph API integration
-- [ ] Bulk certificate email functionality
-- [ ] Email status tracking
-- [ ] Retry mechanism for failed emails
-- [ ] Email delivery logs
+- Case Management System
+- Document Portal
+- Public Services Gateway
+- Court Calendar
 
-### Phase 5: Participant Portal
-- [ ] Participant login with Google/eFaas
-- [ ] Certificate status dashboard
-- [ ] Download certificates from Firebase Storage
-- [ ] Profile update interface
-- [ ] Certificate history view
-- [ ] Real-time status notifications
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm (package manager)
+- Firebase account
+- Office 365 account (for staff authentication)
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/familycourt/aqd.git
+
+# Install dependencies
+pnpm install
+
+# Configure environment
+cp .env.example .env.local
+# Edit .env.local with your Firebase credentials
+
+# Start development server
+pnpm dev
+```
+
+### Development Commands
+
+```bash
+pnpm dev              # Start dev server (http://localhost:5173)
+pnpm build            # Production build
+pnpm preview          # Preview production build
+pnpm deploy:firebase  # Deploy to Firebase Hosting
+```
+
+## Project Structure
+
+```
+aqd/
+├── src/
+│   ├── components/
+│   │   ├── admin/           # Admin components
+│   │   ├── layout/          # Shared layouts
+│   │   └── template/        # Template editor
+│   ├── views/
+│   │   ├── admin/           # Admin pages
+│   │   ├── participant/     # Participant portal
+│   │   └── public/          # Public pages
+│   ├── stores/              # Pinia stores
+│   ├── services/            # API services
+│   ├── types/               # TypeScript types
+│   ├── utils/               # Utilities
+│   └── router/              # Vue Router
+├── docs/                    # Documentation
+├── functions/               # Firebase Functions (planned)
+└── scripts/                 # Setup scripts
+```
+
+## Routes
+
+### Public Routes
+- `/` - AQD Landing Page
+- `/login` - Authentication
+
+### Staff Routes (Office 365)
+- `/admin/dashboard` - Admin Dashboard
+- `/admin/users` - User Management
+- `/admin/participants` - Participant Management
+- `/admin/certificates` - Certificate Management
+- `/admin/templates` - Template Editor
+
+### Participant Routes (Google)
+- `/participant/portal` - Participant Dashboard
+- `/profile` - User Profile
 
 ## Database Structure
 
 ### Firestore Collections
 
 ```javascript
-participants/
-  {participantId}/
-    // English & Dhivehi Names
-    - name: string (English)
-    - name_dv: string (Dhivehi)
-    - partner_name: string (English)
-    - partner_name_dv: string (Dhivehi)
-    
-    // Contact & ID
+// User Groups
+user_groups/
+  {groupId}/
+    - name: string
+    - description: string
+    - permissions: string[]
+    - createdAt: timestamp
+
+// Users
+users/
+  {uid}/
     - email: string
-    - phone: string
-    - id_number: string
-    - partner_id_number: string
-    
-    // Certificate Info
-    - certificate_number: string
-    - certificate_url: string (Firebase Storage link)
-    
-    // Status & Verification
-    - status: "pending" | "profile_submitted" | "verified" | "approved" | "certificate_sent"
-    - profile_verified: boolean
-    - verified_by: string (admin user ID)
-    
-    // Timestamps
-    - email_sent_at: timestamp
-    - created_at: timestamp
-    - updated_at: timestamp
-    - user_id: string (Firebase Auth UID)
+    - displayName: string
+    - roles: string[]
+    - groups: string[] (group IDs)
+    - provider: 'microsoft' | 'google'
+    - isActive: boolean
+    - lastLoginAt: timestamp
 
-profile_updates/
-  {updateId}/
-    - participant_id: string
-    - submitted_data: object (bilingual fields)
-    - status: "pending" | "approved" | "rejected"
-    - reviewed_by: string
-    - review_notes: string
+// MAP Module - Participants
+participants/
+  {id}/
+    - name: string
+    - name_dv: string (Dhivehi)
+    - email: string
+    - status: string
+    - certificateUrl: string
+
+// MAP Module - Templates
+certificate_templates/
+  {id}/
+    - name: string
+    - isDefault: boolean
+    - settings: object
+
+// Settings
+settings/
+  - certificate_config
+  - app_config
 ```
 
-## Benefits
+## Security
 
-- ✅ **Multi-provider Authentication**: Secure login for staff (Office 365) and participants (Google/eFaas)
-- ✅ **Role-based Access Control**: Separate admin and participant portals
-- ✅ **Participant Self-Service**: Users can view, download certificates, and update profiles
-- ✅ **Bilingual Support**: English & Dhivehi names on certificates
-- ✅ **Staff Verification**: Two-step verification process for data accuracy
-- ✅ **Firebase Storage**: Secure PDF storage with role-based access
-- ✅ Modern, professional admin interface
-- ✅ Real-time status updates and notifications
-- ✅ Scalable and secure (Firebase)
-- ✅ Mobile-responsive dashboard
-- ✅ Audit trail for certificate generation
-- ✅ Reduced manual work (90% time savings)
-- ✅ Faster certificate delivery
-- ✅ Zero additional costs (uses existing subscriptions)
+### Authentication Flow
 
-## Getting Started
+**Staff (Office 365)**:
+1. User clicks "Staff Login"
+2. Redirects to Microsoft OAuth
+3. Authenticates with Family Court credentials
+4. System verifies `@familycourt.gov.mv` domain
+5. Creates/updates user record with "officer" role
+6. Redirects to admin dashboard
 
-### Prerequisites
+**Public (Google)**:
+1. User clicks "Login with Google"
+2. Authenticates with Google account
+3. System checks if email matches participant record
+4. Assigns appropriate role (participant/public)
+5. Redirects to appropriate portal
 
-- Node.js (v18+)
-- Firebase account
-- Google Cloud Project (for Sheets API)
-- Office 365 account with admin access (for Azure AD app registration)
-- Microsoft Graph API credentials
+### Firestore Rules
 
-### Installation
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users - authenticated users can read own, officers can read all
+    match /users/{userId} {
+      allow read: if request.auth != null &&
+                     (request.auth.uid == userId || isOfficer());
+      allow write: if request.auth != null && isAdmin();
+    }
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/map.certificate.git
+    // User groups - officers can read, admins can write
+    match /user_groups/{groupId} {
+      allow read: if request.auth != null && isOfficer();
+      allow write: if request.auth != null && isAdmin();
+    }
 
-# Install dependencies
-npm install
-
-# Configure Firebase
-firebase login
-firebase init
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your credentials
-
-# Run development server
-npm run dev
+    // Participants - officers can read/write
+    match /participants/{id} {
+      allow read, write: if request.auth != null && isOfficer();
+      allow read: if request.auth != null &&
+                     resource.data.email == request.auth.token.email;
+    }
+  }
+}
 ```
 
-### Firebase Setup
+## Bilingual Support
 
-1. Create a Firebase project
-2. Enable Firestore Database
-3. Enable Firebase Storage
-4. Enable Firebase Authentication (Google & Microsoft providers)
-5. Deploy Firebase Functions
-6. Configure Google Sheets API credentials
+The system supports both English and Dhivehi:
 
-### Office 365 / Azure AD Setup
+- All participant data has dual fields (`name` / `name_dv`)
+- Certificate templates support bilingual text elements
+- UI supports RTL for Dhivehi content
 
-1. Register application in Azure AD (Azure Portal)
-2. Grant API permissions: `Mail.Send`, `Mail.ReadWrite`
-3. Create client secret
-4. Configure service account email: certificates@familycourt.gov.mv
-5. Add credentials to Firebase Functions environment variables
+## Documentation
 
-## Project Structure
+- [MAP Module](docs/MAP_MODULE.md) - Certificate system documentation
+- [Firebase Setup](docs/FIREBASE_SETUP.md) - Firebase configuration guide
+- [Template Customization](docs/TEMPLATE_CUSTOMIZATION.md) - Template editor guide
+- [Role System](docs/ROLE_SYSTEM.md) - User roles and permissions
+- [UI Conventions](docs/UI_CONVENTIONS.md) - Design guidelines
 
-```
-map.certificate/
-├── src/                          # Vue application
-│   ├── components/
-│   │   ├── ParticipantList.vue
-│   │   ├── CertificatePreview.vue
-│   │   ├── EmailStatus.vue
-│   │   ├── ProfileUpdateForm.vue
-│   │   ├── VerificationPanel.vue
-│   │   └── template/
-│   │       └── TemplateEditor.vue
-│   ├── stores/                   # Pinia stores
-│   │   ├── participants.js
-│   │   ├── auth.js
-│   │   ├── profileUpdates.js
-│   │   └── template.store.ts
-│   ├── types/
-│   │   └── template.types.ts
-│   ├── utils/
-│   │   └── template.defaults.ts
-│   ├── views/
-│   │   ├── admin/
-│   │   │   ├── Dashboard.vue
-│   │   │   ├── VerificationQueue.vue
-│   │   │   ├── CertificateManagement.vue
-│   │   │   └── template/
-│   │   │       └── TemplateManager.vue
-│   │   ├── participant/
-│   │   │   ├── Portal.vue
-│   │   │   ├── CertificateView.vue
-│   │   │   └── ProfileEdit.vue
-│   │   └── Login.vue
-│   ├── composables/
-│   │   ├── useFirebase.js
-│   │   └── useStorage.js
-│   └── main.js
-├── functions/                    # Firebase Functions
-│   ├── index.js
-│   ├── certificateGenerator.js
-│   ├── emailSender.js
-│   ├── sheetsSync.js
-│   └── profileVerification.js
-├── storage/                      # Firebase Storage structure
-│   ├── certificates/
-│   │   └── {year}/{month}/
-│   ├── templates/
-│   └── assets/
-│       ├── logo.png
-│       ├── seal.png
-│       └── signature.png
-├── public/
-│   └── certificate-template.html
-├── docs/                         # Documentation
-│   ├── PROJECT_PLAN.md
-│   ├── TEMPLATE_CUSTOMIZATION.md
-│   ├── TEMPLATE_QUICK_START.md
-│   └── (existing certificate files)
-└── firebase.json
-```
+## Roadmap
+
+### Phase 1: Foundation (Current)
+- [x] Authentication system (Office 365 + Google)
+- [x] User management
+- [x] Role-based access control
+- [x] MAP Certificate module (UI)
+- [ ] MAP Backend integration
+- [ ] AQD Landing page
+
+### Phase 2: Full MAP Module
+- [ ] Participant management (Firestore)
+- [ ] Certificate generation (Firebase Functions)
+- [ ] Email distribution (Microsoft Graph)
+- [ ] Participant portal (functional)
+
+### Phase 3: Ecosystem Expansion
+- [ ] User groups and policies
+- [ ] Additional modules
+- [ ] API for external integrations
+- [ ] Mobile app
+
+## Contributing
+
+This is an internal Family Court project. For access or contributions, contact IT department.
 
 ## License
 
-MIT
+Proprietary - Family Court, Maldives
 
 ## Contact
 
-Family Court, Maldives
+**Family Court, Maldives**
 Email: info@familycourt.gov.mv
+Website: familycourt.gov.mv

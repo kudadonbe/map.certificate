@@ -18,7 +18,7 @@ export function getErrorMessage(errorCode?: string): string {
  * Get redirect path based on user role
  */
 export function getRedirectPath(role: 'admin' | 'participant'): string {
-  return role === 'admin' ? '/admin/dashboard' : '/participant/portal';
+  return role === 'admin' ? '/map/dashboard' : '/participant/portal';
 }
 
 /**

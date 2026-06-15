@@ -34,17 +34,17 @@ const defaultTemplate = {
   border: {
     enabled: true,
     width: 3,
-    color: '#1e40af',
+    color: '#580f41',
     style: 'double',
     radius: 0,
     margin: 15,
   },
   
   theme: {
-    primary: '#1e40af',
-    secondary: '#3b82f6',
-    accent: '#f59e0b',
-    text: '#1f2937',
+    primary: '#580f41',
+    secondary: '#ab5989',
+    accent: '#b47a0b',
+    text: '#2d1325',
   },
   
   elements: [],

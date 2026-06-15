@@ -1,226 +1,337 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-    <!-- Debug Auth Panel (only in development) -->
-    <DebugAuthPanel v-if="isDev" />
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <div class="flex items-center">
-            <h1 class="text-2xl font-bold text-indigo-600">MAP Certificate</h1>
+  <AqdLayout>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Welcome Section -->
+      <div class="mb-8">
+        <div v-if="isAuthenticated" class="bg-gradient-to-br from-fc-900 via-fc-800 to-fc-900 rounded-2xl p-8 text-fc-50 shadow-lg border border-fc-700/30">
+          <div class="flex items-center gap-4 mb-4">
+            <ProfileAvatar
+              :photo-url="user?.photoURL"
+              :display-name="user?.displayName"
+              :email="user?.email"
+              size-class="h-16 w-16 border-4 border-fc-700/50"
+              text-class="text-lg"
+            />
+            <div>
+              <h2 class="text-2xl font-bold text-white">Welcome, {{ userDisplayName }}</h2>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="px-2 py-0.5 bg-fc-700/50 rounded text-sm text-fc-100 border border-fc-600/30">{{ primaryRoleLabel }}</span>
+                <span class="text-fc-200/70 text-sm">Family Court, Maldives</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <!-- Logged In Navigation -->
-          <div v-if="isAuthenticated" class="flex items-center gap-4">
-            <span class="text-gray-700">Welcome, {{ userDisplayName }}!</span>
-            <button
-              @click="navigateToPortal"
-              class="px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+        <div v-else class="bg-gradient-to-br from-fc-900 via-fc-800 to-fc-900 rounded-2xl p-8 text-fc-50 text-center shadow-lg border border-fc-700/30">
+          <BuildingLibraryIcon class="w-16 h-16 mx-auto mb-4 text-fc-300/80" />
+          <h2 class="text-3xl font-bold mb-2 text-fc-50">Welcome to AQD</h2>
+          <p class="text-fc-100/90 mb-6 max-w-2xl mx-auto">
+            Family Court Digital Platform - Access court services, manage certificates, and connect with Family Court Maldives online.
+          </p>
+          <div class="flex gap-4 justify-center">
+            <router-link
+              to="/login"
+              class="px-6 py-3 bg-white text-fc-800 font-semibold rounded-lg hover:bg-fc-50 transition-colors shadow-sm"
             >
-              {{ isAdmin ? 'Admin Dashboard' : isParticipant ? 'My Portal' : 'My Profile' }}
-            </button>
-            <button
-              @click="logout"
-              class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors flex items-center gap-2"
+              Staff Login
+            </router-link>
+            <router-link
+              to="/login"
+              class="px-6 py-3 bg-fc-800/50 text-fc-50 font-semibold rounded-lg hover:bg-fc-800/70 transition-colors border border-fc-700/50"
             >
-              <ArrowRightOnRectangleIcon class="w-5 h-5" />
-              Logout
-            </button>
-          </div>
-
-          <!-- Logged Out Navigation -->
-          <div v-else class="flex gap-4">
-            <button
-              @click="navigateToLogin"
-              class="px-4 py-2 text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-            >
-              Admin Login
-            </button>
-            <button
-              @click="navigateToLogin"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Participant Login
-            </button>
+              Public Login
+            </router-link>
           </div>
         </div>
       </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div class="text-center">
-        <h2 class="text-5xl font-bold text-gray-900 mb-6">
-          Marriage Awareness Program
-        </h2>
-        <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Access your Marriage Awareness Program certificates and information online. Login to view your certificates, enroll in sessions, and manage your program participation.
-        </p>
-
-        <!-- Logged In CTAs -->
-        <div v-if="isAuthenticated" class="flex gap-4 justify-center">
-          <button
-            @click="navigateToPortal"
-            class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
+      <!-- Applications Grid -->
+      <section class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Squares2X2Icon class="w-5 h-5 text-gray-400" />
+          Applications
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <!-- MAP Certificate - Active -->
+          <router-link
+            :to="mapAppRoute"
+            class="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100 group"
           >
-            {{ isAdmin ? 'Go to Admin Dashboard' : isParticipant ? 'Go to My Portal' : 'Go to My Profile' }}
-          </button>
-        </div>
+            <div class="w-12 h-12 bg-fc-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-fc-100 transition-colors">
+              <DocumentCheckIcon class="w-6 h-6 text-fc-700" />
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">MAP Certificate</h4>
+            <p class="text-sm text-gray-500">Marriage Awareness Program</p>
+            <span class="inline-block mt-3 text-xs px-2 py-1 bg-green-100 text-green-700 rounded">Active</span>
+          </router-link>
 
-        <!-- Logged Out CTAs -->
-        <div v-else class="flex gap-4 justify-center">
-          <button
-            @click="navigateToLogin"
-            class="px-8 py-3 bg-indigo-600 text-white text-lg font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
-          >
-            Get Started
-          </button>
-          <a
-            href="#features"
-            class="px-8 py-3 bg-white text-indigo-600 text-lg font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-lg border-2 border-indigo-600"
-          >
-            Learn More
-          </a>
-        </div>
-      </div>
-
-      <!-- Features Grid -->
-      <div id="features" class="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <DocumentIcon class="w-6 h-6 text-indigo-600" />
+          <!-- Coming Soon Apps -->
+          <div class="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
+            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+              <FolderIcon class="w-6 h-6 text-gray-400" />
+            </div>
+            <h4 class="font-semibold text-gray-400 mb-1">Case Portal</h4>
+            <p class="text-sm text-gray-400">Case management</p>
+            <span class="inline-block mt-3 text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded">Coming Soon</span>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Certificate Generation
+
+          <div class="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
+            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+              <DocumentTextIcon class="w-6 h-6 text-gray-400" />
+            </div>
+            <h4 class="font-semibold text-gray-400 mb-1">Documents</h4>
+            <p class="text-sm text-gray-400">Document portal</p>
+            <span class="inline-block mt-3 text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded">Coming Soon</span>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
+            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
+              <CalendarDaysIcon class="w-6 h-6 text-gray-400" />
+            </div>
+            <h4 class="font-semibold text-gray-400 mb-1">Court Calendar</h4>
+            <p class="text-sm text-gray-400">Schedules & hearings</p>
+            <span class="inline-block mt-3 text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded">Coming Soon</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Quick Links -->
+        <section class="lg:col-span-2">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <LinkIcon class="w-5 h-5 text-gray-400" />
+            Quick Links
           </h3>
-          <p class="text-gray-600">
-            Automatically generate professional PDF certificates with customizable templates
-          </p>
-        </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100">
+            <!-- Staff Links -->
+            <template v-if="isStaff">
+              <router-link
+                to="/map/dashboard"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-50 rounded-lg flex items-center justify-center">
+                  <ChartBarIcon class="w-5 h-5 text-fc-700" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">Dashboard</p>
+                  <p class="text-sm text-gray-500">View statistics and manage operations</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
 
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <EnvelopeIcon class="w-6 h-6 text-indigo-600" />
+              <router-link
+                to="/map/participants"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-accentLight rounded-lg flex items-center justify-center">
+                  <UsersIcon class="w-5 h-5 text-fc-accent" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">Participants</p>
+                  <p class="text-sm text-gray-500">Manage MAP program participants</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+
+              <router-link
+                to="/map/certificates"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-50 rounded-lg flex items-center justify-center">
+                  <DocumentCheckIcon class="w-5 h-5 text-fc-700" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">Certificates</p>
+                  <p class="text-sm text-gray-500">Generate and send certificates</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+
+              <router-link
+                v-if="canManageUsers"
+                to="/map/users"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-accentLight rounded-lg flex items-center justify-center">
+                  <UserGroupIcon class="w-5 h-5 text-fc-accent" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">User Management</p>
+                  <p class="text-sm text-gray-500">Manage users and permissions</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+            </template>
+
+            <!-- Participant Links -->
+            <template v-else-if="isParticipant">
+              <router-link
+                to="/participant/portal"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-50 rounded-lg flex items-center justify-center">
+                  <DocumentCheckIcon class="w-5 h-5 text-fc-700" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">My Certificates</p>
+                  <p class="text-sm text-gray-500">View and download your certificates</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+
+              <router-link
+                to="/profile"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-accentLight rounded-lg flex items-center justify-center">
+                  <UserCircleIcon class="w-5 h-5 text-fc-accent" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">My Profile</p>
+                  <p class="text-sm text-gray-500">View your account information</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+            </template>
+
+            <!-- Public/Guest Links -->
+            <template v-else>
+              <router-link
+                to="/profile"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-50 rounded-lg flex items-center justify-center">
+                  <UserCircleIcon class="w-5 h-5 text-fc-700" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">My Profile</p>
+                  <p class="text-sm text-gray-500">View your account information</p>
+                </div>
+                <ChevronRightIcon class="w-5 h-5 text-gray-400" />
+              </router-link>
+
+              <a
+                href="https://familycourt.gov.mv"
+                target="_blank"
+                class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div class="w-10 h-10 bg-fc-accentLight rounded-lg flex items-center justify-center">
+                  <GlobeAltIcon class="w-5 h-5 text-fc-accent" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-gray-900">Family Court Website</p>
+                  <p class="text-sm text-gray-500">Visit our official website</p>
+                </div>
+                <ArrowTopRightOnSquareIcon class="w-5 h-5 text-gray-400" />
+              </a>
+            </template>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Email Distribution
+        </section>
+
+        <!-- Announcements / Support -->
+        <section>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <MegaphoneIcon class="w-5 h-5 text-gray-400" />
+            Notices
           </h3>
-          <p class="text-gray-600">
-            Send certificates to participants automatically via email with one click
-          </p>
-        </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
+            <!-- Notice Items -->
+            <div class="p-3 bg-fc-50 rounded-lg border border-fc-100">
+              <div class="flex items-start gap-3">
+                <InformationCircleIcon class="w-5 h-5 text-fc-700 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p class="text-sm font-medium text-fc-900">System Update</p>
+                  <p class="text-xs text-fc-700 mt-1">AQD platform is now live with MAP Certificate module.</p>
+                </div>
+              </div>
+            </div>
 
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <UserGroupIcon class="w-6 h-6 text-indigo-600" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Participant Portal
-          </h3>
-          <p class="text-gray-600">
-            Participants can view, download, and manage their certificates online
-          </p>
-        </div>
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <div class="flex items-start gap-3">
+                <CalendarDaysIcon class="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Upcoming Features</p>
+                  <p class="text-xs text-gray-600 mt-1">Case Portal and Document Management coming soon.</p>
+                </div>
+              </div>
+            </div>
 
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <ShieldCheckIcon class="w-6 h-6 text-indigo-600" />
+            <!-- Support Section -->
+            <div class="pt-4 border-t border-gray-100">
+              <h4 class="text-sm font-medium text-gray-900 mb-3">Support</h4>
+              <div class="space-y-2">
+                <a
+                  href="mailto:it@familycourt.gov.mv"
+                  class="flex items-center gap-2 text-sm text-gray-600 hover:text-fc-700"
+                >
+                  <EnvelopeIcon class="w-4 h-4" />
+                  it@familycourt.gov.mv
+                </a>
+                <a
+                  href="tel:+9603323894"
+                  class="flex items-center gap-2 text-sm text-gray-600 hover:text-fc-700"
+                >
+                  <PhoneIcon class="w-4 h-4" />
+                  +960 332 3894
+                </a>
+              </div>
+            </div>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Secure Authentication
-          </h3>
-          <p class="text-gray-600">
-            Multi-provider authentication with Office 365 for admins and Google OAuth for participants
-          </p>
-        </div>
-
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <LanguageIcon class="w-6 h-6 text-indigo-600" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Bilingual Support
-          </h3>
-          <p class="text-gray-600">
-            Full support for English and Dhivehi languages on certificates
-          </p>
-        </div>
-
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
-            <CloudIcon class="w-6 h-6 text-indigo-600" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            Cloud Storage
-          </h3>
-          <p class="text-gray-600">
-            Secure PDF storage with Firebase and role-based access control
-          </p>
-        </div>
-      </div>
-
-      <!-- Stats Section -->
-      <div class="mt-24 bg-white rounded-xl shadow-lg p-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">90%</div>
-            <div class="text-gray-600">Time Savings</div>
-          </div>
-          <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">100%</div>
-            <div class="text-gray-600">Automated</div>
-          </div>
-          <div>
-            <div class="text-4xl font-bold text-indigo-600 mb-2">Secure</div>
-            <div class="text-gray-600">Firebase Backend</div>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-24">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="text-center text-gray-600">
-          <p class="mb-2">Family Court, Maldives</p>
-          <p class="text-sm">Email: info@familycourt.gov.mv</p>
-        </div>
-      </div>
-    </footer>
-  </div>
+  </AqdLayout>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useAuth } from '@/composables/useAuth';
-import DebugAuthPanel from '@/components/layout/DebugAuthPanel.vue';
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { getPrimaryRoleLabel } from '@/utils/role.helpers';
+import AqdLayout from '@/layouts/AqdLayout.vue';
+import ProfileAvatar from '@/components/layout/ProfileAvatar.vue';
 import {
-  DocumentIcon,
-  EnvelopeIcon,
+  BuildingLibraryIcon,
+  UserCircleIcon,
+  Squares2X2Icon,
+  DocumentCheckIcon,
+  FolderIcon,
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  LinkIcon,
+  ChartBarIcon,
+  UsersIcon,
   UserGroupIcon,
-  ShieldCheckIcon,
-  CloudIcon,
-  LanguageIcon,
-  ArrowRightOnRectangleIcon
+  ChevronRightIcon,
+  GlobeAltIcon,
+  ArrowTopRightOnSquareIcon,
+  MegaphoneIcon,
+  InformationCircleIcon,
+  EnvelopeIcon,
+  PhoneIcon,
 } from '@heroicons/vue/24/outline';
 
-const router = useRouter();
-const { isAuthenticated, isAdmin, isParticipant, isPublic, userDisplayName, logout } = useAuth();
-const isDev = import.meta.env.DEV; // Only show in development mode
+const authStore = useAuthStore();
 
-function navigateToPortal() {
-  if (isAdmin.value) {
-    router.push('/admin/dashboard');
-  } else if (isParticipant.value) {
-    router.push('/participant/portal');
-  } else if (isPublic.value) {
-    router.push('/profile');
-  } else {
-    router.push('/login');
+// Computed properties
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const user = computed(() => authStore.user);
+const userDisplayName = computed(() => authStore.userDisplayName);
+const isStaff = computed(() => authStore.isOfficer);
+const isParticipant = computed(() => authStore.isParticipant);
+const canManageUsers = computed(() => authStore.canManageUsers);
+const primaryRoleLabel = computed(() => getPrimaryRoleLabel(authStore.user));
+
+// Route for MAP app based on user role
+const mapAppRoute = computed(() => {
+  if (authStore.isOfficer) {
+    return '/map/dashboard';
+  } else if (authStore.isParticipant) {
+    return '/participant/portal';
+  } else if (authStore.isAuthenticated) {
+    return '/profile';
   }
-}
-
-function navigateToLogin() {
-  router.push('/login');
-}
+  return '/login';
+});
 </script>

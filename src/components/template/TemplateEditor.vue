@@ -1,532 +1,330 @@
 <template>
-  <div class="template-editor bg-white rounded-lg shadow-lg p-6">
-    <div class="flex gap-6">
-      <!-- Left Sidebar - Controls -->
-      <div class="w-80 flex-shrink-0 space-y-6 overflow-y-auto max-h-screen">
-        <!-- Template Info -->
-        <div class="space-y-4">
-          <h2 class="text-xl font-bold text-gray-900">Template Settings</h2>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
-            <input 
-              v-model="template.name" 
-              type="text"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+  <div class="rounded-xl bg-white p-6 shadow-lg">
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-bold text-gray-900">
+          {{ templateId ? 'Edit Certificate Template' : 'New Certificate Template' }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-600">
+          Edit the saved template and preview it with test participant information.
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          @click="$emit('cancel')"
+          class="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          :disabled="isSaving"
+          @click="saveTemplate"
+          class="rounded-md bg-indigo-600 px-5 py-2 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ isSaving ? 'Saving...' : 'Save Template' }}
+        </button>
+      </div>
+    </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea 
-              v-model="template.description" 
+    <div v-if="isLoading" class="flex justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-b-2 border-indigo-600"></div>
+    </div>
+
+    <div v-else class="grid grid-cols-1 gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+      <div class="max-h-[760px] space-y-5 overflow-y-auto pr-2">
+        <fieldset class="space-y-3">
+          <legend class="mb-2 font-semibold text-gray-900">Template Details</legend>
+          <label class="block text-sm text-gray-700">
+            Template Name
+            <input
+              v-model="template.name"
+              required
+              class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+            />
+          </label>
+          <label class="block text-sm text-gray-700">
+            Description
+            <textarea
+              v-model="template.description"
               rows="2"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
             />
-          </div>
-        </div>
-
-        <!-- Page Settings -->
-        <div class="space-y-4 border-t pt-4">
-          <h3 class="text-lg font-semibold text-gray-900">Page Settings</h3>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
-            <select 
-              v-model="template.size"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="A4">A4 (210 × 297mm)</option>
-              <option value="Letter">Letter (215.9 × 279.4mm)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Orientation</label>
-            <select 
-              v-model="template.orientation"
-              @change="updateOrientation"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="portrait">Portrait</option>
-              <option value="landscape">Landscape</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Background Settings -->
-        <div class="space-y-4 border-t pt-4">
-          <h3 class="text-lg font-semibold text-gray-900">Background</h3>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-            <select 
-              v-model="template.background.type"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="color">Solid Color</option>
-              <option value="gradient">Gradient</option>
-              <option value="image">Image</option>
-            </select>
-          </div>
-
-          <div v-if="template.background.type === 'color'">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-            <input 
-              v-model="template.background.value" 
-              type="color"
-              class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-            />
-          </div>
-
-          <div v-if="template.background.type === 'image'">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Background Image</label>
-            <input 
-              type="file" 
-              accept="image/*"
-              @change="handleBackgroundUpload"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-        </div>
-
-        <!-- Border Settings -->
-        <div class="space-y-4 border-t pt-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Border</h3>
-            <label class="flex items-center">
-              <input 
-                v-model="template.border!.enabled" 
-                type="checkbox"
-                class="mr-2 rounded"
-              />
-              <span class="text-sm text-gray-700">Enable</span>
+          </label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input v-model="template.isActive" type="checkbox" class="rounded" />
+              Active
+            </label>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input v-model="template.isDefault" type="checkbox" class="rounded" />
+              Default
             </label>
           </div>
+          <p class="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
+            This official certificate uses A4 landscape layout.
+          </p>
+        </fieldset>
 
-          <div v-if="template.border?.enabled">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Style</label>
-            <select 
-              v-model="template.border.style"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
-              <option value="double">Double</option>
-            </select>
-          </div>
+        <fieldset class="space-y-3 border-t pt-5">
+          <legend class="mb-2 font-semibold text-gray-900">Test Participant</legend>
+          <label class="block text-sm text-gray-700">
+            Name
+            <input v-model="sampleData.participantName" dir="rtl" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+          </label>
+          <label class="block text-sm text-gray-700">
+            ID Number
+            <input v-model="sampleData.idNumber" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+          </label>
+          <label class="block text-sm text-gray-700">
+            Issue Date
+            <input v-model="sampleData.issueDate" dir="rtl" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+          </label>
+          <p class="text-xs text-gray-500">Test participant values are preview-only and are not saved.</p>
+        </fieldset>
 
-          <div v-if="template.border?.enabled" class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
-              <input 
-                v-model.number="template.border.width" 
-                type="number"
-                min="1"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-              <input 
-                v-model="template.border.color" 
-                type="color"
-                class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Theme Colors -->
-        <div class="space-y-4 border-t pt-4">
-          <h3 class="text-lg font-semibold text-gray-900">Theme Colors</h3>
-          
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Primary</label>
-              <input 
-                v-model="template.theme.primary" 
-                type="color"
-                class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Secondary</label>
-              <input 
-                v-model="template.theme.secondary" 
-                type="color"
-                class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Accent</label>
-              <input 
-                v-model="template.theme.accent" 
-                type="color"
-                class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Text</label>
-              <input 
-                v-model="template.theme.text" 
-                type="color"
-                class="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Signatures & Stamps -->
-        <div class="space-y-4 border-t pt-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Signatures</h3>
-            <button 
-              @click="addSignature"
-              class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              + Add
-            </button>
-          </div>
-
-          <div v-for="(sig, idx) in template.signatures" :key="sig.id" class="p-3 bg-gray-50 rounded-md">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-medium">Signature {{ idx + 1 }}</span>
-              <button @click="removeSignature(idx)" class="text-red-600 text-sm">Remove</button>
-            </div>
-            <div class="space-y-2">
-              <input 
-                v-model="sig.signatoryName" 
-                placeholder="Signatory Name"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-              />
-              <input 
-                v-model="sig.signatoryTitle" 
-                placeholder="Title"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-              />
-              <input 
-                type="file" 
-                accept="image/*"
-                @change="(e) => handleSignatureUpload(e, idx)"
-                class="w-full text-xs"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-4 border-t pt-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">Stamps/Seals</h3>
-            <button 
-              @click="addStamp"
-              class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              + Add
-            </button>
-          </div>
-
-          <div v-for="(stamp, idx) in template.stamps" :key="stamp.id" class="p-3 bg-gray-50 rounded-md">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-sm font-medium">Stamp {{ idx + 1 }}</span>
-              <button @click="removeStamp(idx)" class="text-red-600 text-sm">Remove</button>
-            </div>
-            <div class="space-y-2">
-              <select 
-                v-model="stamp.stampType"
-                class="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-              >
-                <option value="official-seal">Official Seal</option>
-                <option value="stamp">Stamp</option>
-                <option value="watermark">Watermark</option>
-              </select>
-              <input 
-                type="file" 
-                accept="image/*"
-                @change="(e) => handleStampUpload(e, idx)"
-                class="w-full text-xs"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3 border-t pt-4 sticky bottom-0 bg-white">
-          <button 
-            @click="saveTemplate"
-            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+        <fieldset class="space-y-3 border-t pt-5">
+          <legend class="mb-2 font-semibold text-gray-900">Certificate Text</legend>
+          <label
+            v-for="field in editableFields"
+            :key="field.key"
+            class="block text-sm text-gray-700"
           >
-            Save Template
-          </button>
-          <button 
-            @click="$emit('cancel')"
-            class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-        </div>
+            {{ field.label }}
+            <textarea
+              v-if="field.multiline"
+              v-model="certificateFields[field.key]"
+              dir="rtl"
+              rows="3"
+              class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+            />
+            <input
+              v-else
+              v-model="certificateFields[field.key]"
+              dir="rtl"
+              class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+            />
+          </label>
+        </fieldset>
+
+        <p v-if="errorMessage" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {{ errorMessage }}
+        </p>
       </div>
 
-      <!-- Right Side - Preview -->
-      <div class="flex-1 flex flex-col items-center justify-start bg-gray-100 p-8 rounded-lg">
-        <div class="mb-4 flex items-center gap-4">
-          <h3 class="text-lg font-semibold">Preview</h3>
-          <div class="flex gap-2">
-            <button 
-              @click="previewMode = 'print'"
-              :class="previewMode === 'print' ? 'bg-blue-600 text-white' : 'bg-white'"
-              class="px-3 py-1 rounded-md text-sm border"
-            >
-              Print (A4)
-            </button>
-            <button 
-              @click="previewMode = 'mobile'"
-              :class="previewMode === 'mobile' ? 'bg-blue-600 text-white' : 'bg-white'"
-              class="px-3 py-1 rounded-md text-sm border"
-            >
-              Mobile View
-            </button>
-          </div>
+      <div class="min-w-0 self-start rounded-lg bg-gray-100 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h3 class="font-semibold text-gray-900">Live Preview</h3>
+          <span class="text-xs text-gray-500">A4 landscape</span>
         </div>
-
-        <!-- Certificate Preview -->
-        <div 
-          :class="[
-            'certificate-preview bg-white shadow-xl',
-            previewMode === 'mobile' ? 'w-[375px] scale-90' : 'w-[210mm] h-[297mm]',
-            template.orientation === 'landscape' ? 'landscape' : 'portrait'
-          ]"
-          :style="certificateStyle"
-        >
-          <!-- Render certificate elements here -->
-          <div class="relative w-full h-full">
-            <div v-for="element in template.elements" :key="element.id" 
-                 :style="getElementStyle(element)"
-                 class="absolute">
-              <component 
-                :is="getElementComponent(element.type)"
-                :element="element"
-                :data="sampleData"
-              />
-            </div>
-            
-            <!-- Signatures -->
-            <div v-for="sig in template.signatures" :key="sig.id"
-                 :style="getElementStyle(sig)"
-                 class="absolute">
-              <img v-if="sig.url" :src="sig.url" :alt="sig.alt" class="max-w-full h-auto" />
-              <div v-if="sig.showName" class="text-center mt-1 text-sm">{{ sig.signatoryName }}</div>
-              <div v-if="sig.showTitle" class="text-center text-xs text-gray-600">{{ sig.signatoryTitle }}</div>
-            </div>
-
-            <!-- Stamps -->
-            <div v-for="stamp in template.stamps" :key="stamp.id"
-                 :style="getElementStyle(stamp)"
-                 class="absolute">
-              <img v-if="stamp.url" :src="stamp.url" :alt="stamp.alt" 
-                   :style="{ opacity: stamp.opacity || 1 }"
-                   class="max-w-full h-auto" />
-            </div>
-          </div>
-        </div>
+        <TemporaryCertificate
+          v-bind="certificateFields"
+          :participant-name="sampleData.participantName"
+          :id-number="sampleData.idNumber"
+          :issue-date="sampleData.issueDate"
+          :signature-url="signatureUrl"
+          :seal-url="sealUrl"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import type { CertificateTemplate } from '@/types/template.types';
+import { onMounted, ref } from 'vue';
+import TemporaryCertificate from '@/components/certificate/TemporaryCertificate.vue';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTemplateStore } from '@/stores/template.store';
+import type {
+  CertificateTemplate,
+  TextElement,
+} from '@/types/template.types';
+import { createDefaultTemplate } from '@/utils/template.defaults';
+
+type CertificateFields = {
+  organization: string;
+  location: string;
+  title: string;
+  textBeforeName: string;
+  idLabel: string;
+  textAfterId: string;
+  signatoryName: string;
+  signatoryRole: string;
+  stampLabel: string;
+};
+
+type CertificateFieldKey = keyof CertificateFields;
 
 const props = defineProps<{
   templateId?: string;
-  initialTemplate?: CertificateTemplate;
 }>();
 
-const emit = defineEmits(['save', 'cancel']);
+const emit = defineEmits<{
+  save: [];
+  cancel: [];
+}>();
 
 const templateStore = useTemplateStore();
-const template = ref<CertificateTemplate>(props.initialTemplate || createEmptyTemplate());
-const previewMode = ref<'print' | 'mobile'>('print');
+const authStore = useAuthStore();
+const isLoading = ref(false);
+const isSaving = ref(false);
+const errorMessage = ref('');
 
-const sampleData = {
-  certificateNumber: 'MAP-2026-001',
-  name: 'Ahmed Ali',
-  name_dv: 'އަހްމަދު އަލީ',
-  partnerName: 'Aminath Sara',
-  partnerName_dv: 'އާމިނަތު ސާރާ',
-  courseDate: new Date('2026-01-15'),
-  issueDate: new Date('2026-01-20'),
-};
-
-const certificateStyle = computed(() => {
-  const bg = template.value.background;
-  let backgroundColor: string = '#ffffff';
-  
-  if (bg.type === 'color') {
-    backgroundColor = typeof bg.value === 'string' ? bg.value : '#ffffff';
-  } else if (bg.type === 'gradient' && typeof bg.value === 'object') {
-    backgroundColor = `linear-gradient(${bg.value.angle || 0}deg, ${bg.value.from}, ${bg.value.to})`;
-  }
-  
-  return {
-    backgroundColor,
-    backgroundImage: bg.image ? `url(${bg.image})` : undefined,
-    border: template.value.border?.enabled 
-      ? `${template.value.border.width}px ${template.value.border.style} ${template.value.border.color}`
-      : 'none',
-  };
+const defaultTemplate = createTemplateModel();
+const template = ref<CertificateTemplate>(defaultTemplate);
+const sampleData = ref({
+  participantName: 'ހުސައިން އަލީ',
+  idNumber: 'A123456',
+  issueDate: '14 ޖޫން 2026',
+});
+const certificateFields = ref<CertificateFields>({
+  organization: 'ފެމިލީ ކޯޓު',
+  location: 'މާލެ، ދިވެހިރާއްޖެ',
+  title: 'ކާވެންޏަށް ހޭލުންތެރިކުރުމުގެ ޕްރޮގްރާމު ފުރިހަމަކުރިކަމުގެ ލިޔުން',
+  textBeforeName: 'މި ލިޔުމަކީ',
+  idLabel: 'އައިޑީކާޑު ނަންބަރު',
+  textAfterId: 'ކާވެންޏަށް ހޭލުންތެރިކުރުމުގެ ޕްރޮގްރާމު ފުރިހަމަކޮށްފައިވާތީ ދޫކޮށްފައިވާ ލިޔުމެކެވެ.',
+  signatoryName: 'އަޙްމަދު ސައްފާނު',
+  signatoryRole: 'ޕްރޮގްރާމް ކޯޑިނޭޓަރ',
+  stampLabel: 'ފެމިލީ ކޯޓު',
 });
 
-function createEmptyTemplate(): CertificateTemplate {
+const editableFields: Array<{ key: CertificateFieldKey; label: string; multiline?: boolean }> = [
+  { key: 'organization', label: 'Organization' },
+  { key: 'location', label: 'Location' },
+  { key: 'title', label: 'Certificate Title', multiline: true },
+  { key: 'textBeforeName', label: 'Text Before Name' },
+  { key: 'idLabel', label: 'ID Label' },
+  { key: 'textAfterId', label: 'Body Text After ID', multiline: true },
+  { key: 'signatoryName', label: 'Signatory Name' },
+  { key: 'signatoryRole', label: 'Signatory Role' },
+  { key: 'stampLabel', label: 'Stamp Label' },
+];
+
+const signatureUrl = ref('/certificate-assets/signature-template.png');
+const sealUrl = ref('/certificate-assets/seal.jpg');
+
+function createTemplateModel(): CertificateTemplate {
+  const createdBy = authStore.user?.uid || '';
+  const base = createDefaultTemplate('landscape', createdBy);
   return {
     id: '',
-    name: 'New Template',
-    description: '',
-    size: 'A4',
-    orientation: 'portrait',
-    width: 210,
-    height: 297,
-    background: { type: 'color', value: '#ffffff', opacity: 1 },
-    border: { enabled: true, width: 2, color: '#1e40af', style: 'solid', margin: 15 },
-    elements: [],
-    signatures: [],
-    stamps: [],
-    theme: { primary: '#1e40af', secondary: '#3b82f6', accent: '#f59e0b', text: '#1f2937' },
-    createdBy: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    version: 1,
-    isDefault: false,
-    isActive: true,
-    printSettings: { margin: { top: 0, right: 0, bottom: 0, left: 0 }, resolution: 300 },
+    ...base,
+    name: 'MAP Certificate',
+    description: 'Official Marriage Awareness Program certificate',
+    orientation: 'landscape',
+    width: 297,
+    height: 210,
   };
 }
 
-function updateOrientation() {
-  if (template.value.orientation === 'landscape') {
-    template.value.width = 297;
-    template.value.height = 210;
-  } else {
-    template.value.width = 210;
-    template.value.height = 297;
-  }
+function getTextContent(id: string, fallback: string): string {
+  const element = template.value.elements.find(
+    item => item.id === id && item.type === 'text',
+  ) as TextElement | undefined;
+  return element?.content || fallback;
 }
 
-async function handleBackgroundUpload(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    const url = await templateStore.uploadAsset(file, 'background');
-    template.value.background.image = url;
-  }
-}
-
-async function handleSignatureUpload(event: Event, index: number) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    const url = await templateStore.uploadAsset(file, 'signature');
-    template.value.signatures[index].url = url;
-  }
-}
-
-async function handleStampUpload(event: Event, index: number) {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (file) {
-    const url = await templateStore.uploadAsset(file, 'stamp');
-    template.value.stamps[index].url = url;
-  }
-}
-
-function addSignature() {
-  template.value.signatures.push({
-    id: `sig-${Date.now()}`,
-    type: 'image',
-    url: '',
-    alt: 'Signature',
-    position: { x: 50, y: 250, width: 100, height: 50 },
-    zIndex: 10,
-    visible: true,
-    signatoryName: '',
-    signatoryTitle: '',
-    showName: true,
-    showTitle: true,
-    opacity: 1,
-  });
-}
-
-function removeSignature(index: number) {
-  template.value.signatures.splice(index, 1);
-}
-
-function addStamp() {
-  template.value.stamps.push({
-    id: `stamp-${Date.now()}`,
-    type: 'image',
-    url: '',
-    alt: 'Stamp',
-    position: { x: 150, y: 250, width: 80, height: 80 },
-    zIndex: 10,
-    visible: true,
-    stampType: 'official-seal',
-    opacity: 1,
-  });
-}
-
-function removeStamp(index: number) {
-  template.value.stamps.splice(index, 1);
-}
-
-function getElementStyle(element: any) {
-  return {
-    left: `${element.position.x}mm`,
-    top: `${element.position.y}mm`,
-    width: element.position.width ? `${element.position.width}mm` : 'auto',
-    height: element.position.height ? `${element.position.height}mm` : 'auto',
-    zIndex: element.zIndex,
+function readCertificateFields() {
+  certificateFields.value = {
+    organization: getTextContent('header-dv-1', certificateFields.value.organization),
+    location: getTextContent('header-dv-2', certificateFields.value.location),
+    title: getTextContent('title-dv', certificateFields.value.title),
+    textBeforeName: getTextContent('body-dv-1', certificateFields.value.textBeforeName),
+    idLabel: getTextContent('id-label', certificateFields.value.idLabel),
+    textAfterId: getTextContent('body-dv-2', certificateFields.value.textAfterId),
+    signatoryName: template.value.signatures[0]?.signatoryName || certificateFields.value.signatoryName,
+    signatoryRole: template.value.signatures[0]?.signatoryTitle || getTextContent('signature-label', certificateFields.value.signatoryRole),
+    stampLabel: getTextContent('footer', certificateFields.value.stampLabel),
   };
+
+  signatureUrl.value = template.value.signatures[0]?.url || '/certificate-assets/signature-template.png';
+  sealUrl.value = template.value.stamps[0]?.url || '/certificate-assets/seal.jpg';
 }
 
-function getElementComponent(_type: string) {
-  return 'div'; // Placeholder - implement actual components
+function updateTextElement(id: string, content: string) {
+  let element = template.value.elements.find(
+    item => item.id === id && item.type === 'text',
+  ) as TextElement | undefined;
+
+  if (!element) {
+    const defaultElement = defaultTemplate.elements.find(
+      item => item.id === id && item.type === 'text',
+    ) as TextElement | undefined;
+    if (!defaultElement) return;
+
+    element = structuredClone(defaultElement);
+    template.value.elements.push(element);
+  }
+
+  element.content = content;
+}
+
+function applyCertificateFields() {
+  updateTextElement('header-dv-1', certificateFields.value.organization);
+  updateTextElement('header-dv-2', certificateFields.value.location);
+  updateTextElement('title-dv', certificateFields.value.title);
+  updateTextElement('body-dv-1', certificateFields.value.textBeforeName);
+  updateTextElement('id-label', certificateFields.value.idLabel);
+  updateTextElement('body-dv-2', certificateFields.value.textAfterId);
+  updateTextElement('signature-label', certificateFields.value.signatoryRole);
+  updateTextElement('footer', certificateFields.value.stampLabel);
+
+  if (!template.value.signatures[0] && defaultTemplate.signatures[0]) {
+    template.value.signatures.push(structuredClone(defaultTemplate.signatures[0]));
+  }
+  template.value.signatures[0].signatoryName = certificateFields.value.signatoryName;
+  template.value.signatures[0].signatoryTitle = certificateFields.value.signatoryRole;
+  template.value.signatures[0].url = signatureUrl.value;
+
+  if (!template.value.stamps[0] && defaultTemplate.stamps[0]) {
+    template.value.stamps.push(structuredClone(defaultTemplate.stamps[0]));
+  }
+  template.value.stamps[0].url = sealUrl.value;
+
+  template.value.orientation = 'landscape';
+  template.value.width = 297;
+  template.value.height = 210;
 }
 
 async function saveTemplate() {
+  if (!template.value.name.trim()) {
+    errorMessage.value = 'Template name is required.';
+    return;
+  }
+
+  isSaving.value = true;
+  errorMessage.value = '';
+  applyCertificateFields();
+
   try {
+    const { id, createdAt, updatedAt, version, ...templateData } = template.value;
     if (props.templateId) {
-      await templateStore.updateTemplate(props.templateId, template.value);
+      await templateStore.updateTemplate(props.templateId, templateData);
     } else {
-      await templateStore.createTemplate(template.value);
+      await templateStore.createTemplate(templateData);
     }
     emit('save');
   } catch (error) {
-    console.error('Error saving template:', error);
+    errorMessage.value = error instanceof Error ? error.message : 'Unable to save template.';
+  } finally {
+    isSaving.value = false;
   }
 }
 
 onMounted(async () => {
-  if (props.templateId) {
+  if (!props.templateId) return;
+
+  isLoading.value = true;
+  try {
     await templateStore.loadTemplate(props.templateId);
     if (templateStore.activeTemplate) {
-      template.value = templateStore.activeTemplate;
+      template.value = structuredClone(templateStore.activeTemplate);
+      readCertificateFields();
     }
+  } finally {
+    isLoading.value = false;
   }
 });
 </script>
-
-<style scoped>
-.certificate-preview {
-  transition: all 0.3s ease;
-}
-
-.certificate-preview.landscape {
-  transform: rotate(0deg);
-}
-
-@media print {
-  .certificate-preview {
-    box-shadow: none;
-  }
-}
-</style>

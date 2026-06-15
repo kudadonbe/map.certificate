@@ -17,17 +17,17 @@ export const DEFAULT_A4_PORTRAIT_TEMPLATE: Omit<CertificateTemplate, 'id' | 'cre
   border: {
     enabled: true,
     width: 2,
-    color: '#2563eb',
+    color: '#580f41',
     style: 'solid',
     radius: 0,
     margin: 20,
   },
   
   theme: {
-    primary: '#2563eb',
-    secondary: '#3b82f6',
-    accent: '#10b981',
-    text: '#1f2937',
+    primary: '#580f41',
+    secondary: '#ab5989',
+    accent: '#b47a0b',
+    text: '#2d1325',
   },
   
   elements: [
@@ -140,7 +140,7 @@ export const DEFAULT_A4_PORTRAIT_TEMPLATE: Omit<CertificateTemplate, 'id' | 'cre
       font: {
         size: 18,
         weight: 'bold',
-        color: '#2563eb',
+        color: '#580f41',
         family: 'Arial',
       },
       align: 'center',

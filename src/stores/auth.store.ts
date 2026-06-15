@@ -18,9 +18,14 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value);
 
   // Backward compatible role checks
-  const isAdmin = computed(() => hasRole(user.value, 'admin'));
+  const isDeveloper = computed(() => hasRole(user.value, 'developer'));
+  const isSystemAdmin = computed(() => hasRole(user.value, 'system_admin') || hasRole(user.value, 'developer'));
+  const isAdmin = computed(() => hasRole(user.value, 'admin') || hasRole(user.value, 'system_admin') || hasRole(user.value, 'developer'));
+  const isOfficer = computed(() => hasRole(user.value, 'officer') || hasRole(user.value, 'admin') || hasRole(user.value, 'system_admin') || hasRole(user.value, 'developer'));
   const isParticipant = computed(() => hasRole(user.value, 'participant'));
   const isPublic = computed(() => hasRole(user.value, 'public'));
+  const canManageUsers = computed(() => hasRole(user.value, 'developer') || hasRole(user.value, 'system_admin'));
+  const isStaff = computed(() => isOfficer.value); // Alias for isOfficer
 
   const userEmail = computed(() => user.value?.email || '');
   const userDisplayName = computed(() => user.value?.displayName || 'User');
@@ -89,6 +94,8 @@ export const useAuthStore = defineStore('auth', () => {
           const appUser = await AuthService.loadUserData(fbUser.uid);
 
           if (appUser) {
+            // Prefer the current provider profile image over a stale Firestore URL.
+            appUser.photoURL = fbUser.photoURL || appUser.photoURL;
             user.value = appUser;
             console.log('✅ User session restored');
             console.log('👤 User:', appUser.email);
@@ -148,7 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Login with Google (for participant users)
+   * Login with Google (for participant users or whitelisted admins)
    */
   async function loginWithGoogle(): Promise<LoginResult> {
     error.value = null;
@@ -180,6 +187,121 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Register admin with email and password
+   * Requires email to be in admin whitelist
+   */
+  async function registerAdmin(email: string, password: string): Promise<LoginResult> {
+    error.value = null;
+    isLoading.value = true;
+
+    try {
+      const result = await AuthService.registerWithEmailPassword(email, password);
+
+      if (result.success && result.user) {
+        // Registration successful but needs email verification
+        // Don't set user in state yet - they need to verify email first
+        // But show success message
+        if (result.error) {
+          // This contains the "check your email" message
+          error.value = result.error;
+        }
+      } else {
+        error.value = result.error || 'Registration failed';
+      }
+
+      return result;
+    } catch (e: any) {
+      error.value = e.message;
+      return { success: false, error: e.message };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
+   * Login admin with email and password
+   * Requires email verification and whitelist check
+   */
+  async function loginWithEmailPassword(email: string, password: string): Promise<LoginResult> {
+    error.value = null;
+    isLoading.value = true;
+
+    try {
+      const result = await AuthService.signInWithEmailPassword(email, password);
+
+      if (result.success && result.user) {
+        user.value = result.user;
+        firebaseUser.value = auth.currentUser;
+      } else {
+        error.value = result.error || 'Login failed';
+      }
+
+      return result;
+    } catch (e: any) {
+      error.value = e.message;
+      return { success: false, error: e.message };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
+   * Send passwordless sign-in link to email
+   */
+  async function sendSignInLink(email: string): Promise<{ success: boolean; error?: string }> {
+    error.value = null;
+    isLoading.value = true;
+
+    try {
+      const result = await AuthService.sendSignInLink(email);
+
+      if (!result.success) {
+        error.value = result.error || 'Failed to send sign-in link';
+      }
+
+      return result;
+    } catch (e: any) {
+      error.value = e.message;
+      return { success: false, error: e.message };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
+   * Check if current URL is a sign-in link
+   */
+  function isSignInWithEmailLink(): boolean {
+    return AuthService.isSignInWithEmailLink();
+  }
+
+  /**
+   * Complete passwordless sign-in from email link
+   */
+  async function completeSignInWithEmailLink(email?: string): Promise<LoginResult> {
+    error.value = null;
+    isLoading.value = true;
+
+    try {
+      const result = await AuthService.completeSignInWithEmailLink(email);
+
+      if (result.success && result.user) {
+        user.value = result.user;
+        firebaseUser.value = auth.currentUser;
+      } else {
+        error.value = result.error || 'Sign-in failed';
+      }
+
+      return result;
+    } catch (e: any) {
+      error.value = e.message;
+      return { success: false, error: e.message };
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /**
    * Logout current user
    */
   async function logout(): Promise<void> {
@@ -194,6 +316,23 @@ export const useAuthStore = defineStore('auth', () => {
       error.value = e.message;
       console.error('❌ Logout error:', e);
       throw e;
+    }
+  }
+
+  /**
+   * Refresh current user data from Firestore
+   */
+  async function refreshUser(): Promise<void> {
+    if (!firebaseUser.value) return;
+
+    try {
+      const appUser = await AuthService.loadUserData(firebaseUser.value.uid);
+      if (appUser) {
+        user.value = appUser;
+        console.log('✅ User data refreshed');
+      }
+    } catch (e: any) {
+      console.error('❌ Error refreshing user:', e);
     }
   }
 
@@ -213,9 +352,14 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Getters
     isAuthenticated,
+    isDeveloper,
+    isSystemAdmin,
     isAdmin,
+    isOfficer,
+    isStaff,
     isParticipant,
     isPublic,
+    canManageUsers,
     userEmail,
     userDisplayName,
     userRole,
@@ -230,7 +374,13 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
     loginWithMicrosoft,
     loginWithGoogle,
+    loginWithEmailPassword,
+    registerAdmin,
+    sendSignInLink,
+    isSignInWithEmailLink,
+    completeSignInWithEmailLink,
     logout,
+    refreshUser,
     clearError,
   };
 });

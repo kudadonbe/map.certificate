@@ -28,7 +28,7 @@ export async function requireAuth(
 }
 
 /**
- * Require admin role - user must be authenticated and have admin role
+ * Require admin role - user must be authenticated and have admin, system_admin, or developer role
  */
 export async function requireAdmin(
   to: RouteLocationNormalized,
@@ -49,8 +49,77 @@ export async function requireAdmin(
     });
   }
 
-  if (!authStore.hasRole('admin')) {
+  // Check for admin-level roles
+  if (!authStore.hasAnyRole(['admin', 'system_admin', 'developer'])) {
     // User is authenticated but doesn't have admin role
+    return next({
+      name: 'Login',
+      query: { error: 'forbidden' }
+    });
+  }
+
+  next();
+}
+
+/**
+ * Require officer role - user must be authenticated and have officer or higher role
+ * This is for Family Court staff access (anyone with @familycourt.gov.mv email)
+ */
+export async function requireOfficer(
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) {
+  const authStore = useAuthStore();
+
+  // Wait for auth initialization if still loading
+  if (authStore.isLoading) {
+    await authStore.initializeAuth();
+  }
+
+  if (!authStore.isAuthenticated) {
+    return next({
+      name: 'Login',
+      query: { redirect: to.fullPath, error: 'unauthorized' }
+    });
+  }
+
+  // Check for officer-level roles (officer, admin, system_admin, developer)
+  if (!authStore.hasAnyRole(['officer', 'admin', 'system_admin', 'developer'])) {
+    // User is authenticated but doesn't have officer role
+    return next({
+      name: 'Login',
+      query: { error: 'forbidden' }
+    });
+  }
+
+  next();
+}
+
+/**
+ * Require developer role - user must be authenticated and have developer role
+ */
+export async function requireDeveloper(
+  to: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
+  next: NavigationGuardNext
+) {
+  const authStore = useAuthStore();
+
+  // Wait for auth initialization if still loading
+  if (authStore.isLoading) {
+    await authStore.initializeAuth();
+  }
+
+  if (!authStore.isAuthenticated) {
+    return next({
+      name: 'Login',
+      query: { redirect: to.fullPath, error: 'unauthorized' }
+    });
+  }
+
+  if (!authStore.hasRole('developer')) {
+    // User is authenticated but doesn't have developer role
     return next({
       name: 'Login',
       query: { error: 'forbidden' }

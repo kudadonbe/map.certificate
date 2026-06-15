@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAP Certificate Color Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #0f172a;
+      background: #eef4ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(88, 15, 65, 0.14), transparent 34rem),
+        linear-gradient(180deg, #fff9fc 0%, #f8edf4 100%);
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 64px 0 80px;
+    }
+
+    header {
+      margin-bottom: 40px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #580f41;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: #580f41;
+      font-size: clamp(2.25rem, 6vw, 4.5rem);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .intro {
+      max-width: 680px;
+      margin: 18px 0 0;
+      color: #475569;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    section {
+      margin-top: 44px;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: #580f41;
+      font-size: 1.45rem;
+    }
+
+    .section-note {
+      margin: 0 0 20px;
+      color: #64748b;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+
+    .theme-card {
+      overflow: hidden;
+      border: 1px solid var(--theme-border);
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 18px 50px var(--theme-shadow);
+    }
+
+    .theme-heading {
+      padding: 28px 28px 22px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--theme-secondary), var(--theme-primary));
+    }
+
+    .theme-number {
+      display: inline-flex;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 16px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.13);
+      font-weight: 800;
+    }
+
+    .theme-heading h2 {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.65rem;
+    }
+
+    .theme-heading p {
+      margin: 9px 0 0;
+      color: var(--theme-on-primary);
+      line-height: 1.55;
+    }
+
+    .theme-body {
+      padding: 24px;
+      background: linear-gradient(180deg, #ffffff, var(--theme-surface));
+    }
+
+    .theme-card .swatches {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .theme-card .swatch {
+      border-color: var(--theme-border);
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .theme-card .color {
+      min-height: 82px;
+      padding: 12px;
+    }
+
+    .theme-card .details {
+      padding: 11px 12px 13px;
+    }
+
+    .sample-ui {
+      margin-top: 22px;
+      padding: 22px;
+      border: 1px solid var(--theme-border);
+      border-radius: 16px;
+      background: #ffffff;
+    }
+
+    .sample-label {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: var(--theme-primary);
+      background: var(--theme-soft);
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sample-ui h3 {
+      margin: 14px 0 8px;
+      color: var(--theme-primary);
+      font-size: 1.35rem;
+    }
+
+    .sample-ui p {
+      margin: 0 0 18px;
+      color: #475569;
+      line-height: 1.55;
+    }
+
+    .sample-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sample-button {
+      padding: 10px 14px;
+      border: 1px solid var(--theme-primary);
+      border-radius: 9px;
+      color: #ffffff;
+      background: var(--theme-primary);
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .sample-button.secondary {
+      color: var(--theme-primary);
+      background: #ffffff;
+    }
+
+    .existing-theme {
+      --theme-primary: #0b3d91;
+      --theme-secondary: #2f6cff;
+      --theme-soft: #eef4ff;
+      --theme-surface: #f7fbff;
+      --theme-border: #b9d0ff;
+      --theme-shadow: rgba(6, 31, 73, 0.12);
+      --theme-on-primary: #dce8ff;
+    }
+
+    .suggested-theme {
+      --theme-primary: #580f41;
+      --theme-secondary: #ab5989;
+      --theme-soft: #f3dfea;
+      --theme-surface: #fff7fb;
+      --theme-border: #dab2ca;
+      --theme-shadow: rgba(88, 15, 65, 0.12);
+      --theme-on-primary: #f8e8f1;
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .swatch {
+      overflow: hidden;
+      border: 1px solid rgba(88, 15, 65, 0.12);
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(88, 15, 65, 0.07);
+    }
+
+    .color {
+      min-height: 128px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-end;
+      color: var(--label-color, #ffffff);
+      background: var(--color);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .details {
+      padding: 14px 16px 16px;
+    }
+
+    .details strong,
+    .details code {
+      display: block;
+    }
+
+    .details strong {
+      color: #0f172a;
+      font-size: 0.95rem;
+    }
+
+    .details code {
+      margin-top: 5px;
+      color: #64748b;
+      font-size: 0.82rem;
+    }
+
+    .preview {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 24px 60px rgba(88, 15, 65, 0.15);
+    }
+
+    .preview-main {
+      padding: clamp(28px, 5vw, 56px);
+      color: #ffffff;
+      background: linear-gradient(135deg, #ab5989, #580f41);
+    }
+
+    .preview-main h3 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .preview-main p {
+      max-width: 520px;
+      margin: 16px 0 26px;
+      color: #f8e8f1;
+      line-height: 1.65;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 10px;
+      color: #580f41;
+      background: #ffffff;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .preview-side {
+      padding: clamp(28px, 5vw, 48px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(180deg, #ffffff, #fff5fa);
+    }
+
+    .preview-side span {
+      width: max-content;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #6f4905;
+      background: #f7edd6;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .preview-side h3 {
+      margin: 16px 0 10px;
+      color: #580f41;
+      font-size: 1.5rem;
+    }
+
+    .preview-side p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    footer {
+      margin-top: 44px;
+      padding-top: 20px;
+      border-top: 1px solid #dab2ca;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding-top: 40px;
+      }
+
+      .preview,
+      .theme-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">AQD Family Court</p>
+      <h1>MAP Certificate Color Guide</h1>
+      <p class="intro">
+        Side-by-side comparison of the existing application theme and a new
+        suggested theme based on the official Family Court colors.
+      </p>
+    </header>
+
+    <section>
+      <h2>Theme Comparison</h2>
+      <p class="section-note">Both options use the same layout and components for an accurate comparison.</p>
+      <div class="theme-grid">
+        <article class="theme-card existing-theme">
+          <div class="theme-heading">
+            <span class="theme-number">1</span>
+            <h2>Existing Theme</h2>
+            <p>The blue palette currently configured and used across the application.</p>
+          </div>
+          <div class="theme-body">
+            <div class="swatches">
+              <div class="swatch">
+                <div class="color" style="--color: #0b3d91;">Primary</div>
+                <div class="details"><strong>Blue</strong><code>#0B3D91</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #2f6cff;">Secondary</div>
+                <div class="details"><strong>Bright Blue</strong><code>#2F6CFF</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #eef4ff; --label-color: #0b3d91;">Soft</div>
+                <div class="details"><strong>Pale Blue</strong><code>#EEF4FF</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #061f49;">Dark</div>
+                <div class="details"><strong>Deep Navy</strong><code>#061F49</code></div>
+              </div>
+            </div>
+            <div class="sample-ui">
+              <span class="sample-label">Certificate Portal</span>
+              <h3>Marriage Awareness Program</h3>
+              <p>View and manage your program certificate from the Family Court portal.</p>
+              <div class="sample-actions">
+                <button class="sample-button" type="button">View Certificate</button>
+                <button class="sample-button secondary" type="button">My Profile</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="theme-card suggested-theme">
+          <div class="theme-heading">
+            <span class="theme-number">2</span>
+            <h2>New Suggested Theme</h2>
+            <p>A brand-aligned palette based on the official Family Court colors.</p>
+          </div>
+          <div class="theme-body">
+            <div class="swatches">
+              <div class="swatch">
+                <div class="color" style="--color: #580f41;">Primary</div>
+                <div class="details"><strong>Family Court Plum</strong><code>#580F41</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #ab5989;">Secondary</div>
+                <div class="details"><strong>Family Court Mauve</strong><code>#AB5989</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #f3dfea; --label-color: #580f41;">Soft</div>
+                <div class="details"><strong>Soft Mauve</strong><code>#F3DFEA</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #2d1325;">Dark</div>
+                <div class="details"><strong>Deep Plum</strong><code>#2D1325</code></div>
+              </div>
+            </div>
+            <div class="sample-ui">
+              <span class="sample-label">Certificate Portal</span>
+              <h3>Marriage Awareness Program</h3>
+              <p>View and manage your program certificate from the Family Court portal.</p>
+              <div class="sample-actions">
+                <button class="sample-button" type="button">View Certificate</button>
+                <button class="sample-button secondary" type="button">My Profile</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Certificate Template Comparison</h2>
+      <p class="section-note">Existing editable certificate colors compared with a Family Court-branded suggestion.</p>
+      <div class="theme-grid">
+        <article class="theme-card existing-theme">
+          <div class="theme-heading">
+            <span class="theme-number">1</span>
+            <h2>Existing Certificate Theme</h2>
+            <p>The default colors currently defined for certificate templates.</p>
+          </div>
+          <div class="theme-body">
+            <div class="swatches">
+              <div class="swatch">
+                <div class="color" style="--color: #2563eb;">Primary</div>
+                <div class="details"><strong>Template Blue</strong><code>#2563EB</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #3b82f6;">Secondary</div>
+                <div class="details"><strong>Light Blue</strong><code>#3B82F6</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #10b981;">Accent</div>
+                <div class="details"><strong>Green</strong><code>#10B981</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #1f2937;">Text</div>
+                <div class="details"><strong>Dark Gray</strong><code>#1F2937</code></div>
+              </div>
+            </div>
+            <div class="sample-ui">
+              <span class="sample-label">Official Certificate</span>
+              <h3>Certificate of Completion</h3>
+              <p>This certifies that the participant completed the Marriage Awareness Program.</p>
+              <div class="sample-actions">
+                <button class="sample-button" type="button">Certificate Number</button>
+                <button class="sample-button secondary" type="button">Issue Date</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="theme-card suggested-theme">
+          <div class="theme-heading">
+            <span class="theme-number">2</span>
+            <h2>Suggested Certificate Theme</h2>
+            <p>A certificate palette aligned with the official Family Court identity.</p>
+          </div>
+          <div class="theme-body">
+            <div class="swatches">
+              <div class="swatch">
+                <div class="color" style="--color: #580f41;">Primary</div>
+                <div class="details"><strong>Family Court Plum</strong><code>#580F41</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #ab5989;">Secondary</div>
+                <div class="details"><strong>Family Court Mauve</strong><code>#AB5989</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #b47a0b;">Accent</div>
+                <div class="details"><strong>Ceremonial Gold</strong><code>#B47A0B</code></div>
+              </div>
+              <div class="swatch">
+                <div class="color" style="--color: #2d1325;">Text</div>
+                <div class="details"><strong>Deep Plum</strong><code>#2D1325</code></div>
+              </div>
+            </div>
+            <div class="sample-ui">
+              <span class="sample-label">Official Certificate</span>
+              <h3>Certificate of Completion</h3>
+              <p>This certifies that the participant completed the Marriage Awareness Program.</p>
+              <div class="sample-actions">
+                <button class="sample-button" type="button">Certificate Number</button>
+                <button class="sample-button secondary" type="button">Issue Date</button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      Source: <code>tailwind.config.js</code>, <code>src/style.css</code>, and
+      <code>src/utils/template.defaults.ts</code>.
+    </footer>
+  </main>
+</body>
+</html>

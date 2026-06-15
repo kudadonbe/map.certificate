@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
+    "build:pages": "vue-tsc && vite build --mode pages",
     "preview": "vite preview",
     "init": "node scripts/initializeFirebase.js",
     "deploy:firebase": "pnpm build && firebase deploy"
@@ -14,6 +15,7 @@
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
     "firebase": "^10.8.0",
+    "google-cli": "^0.1.1",
     "pinia": "^2.1.7",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
