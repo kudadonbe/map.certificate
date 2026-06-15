@@ -13,7 +13,12 @@
       "Bash(npm run build:*)",
       "Bash(firebase deploy:*)",
       "Bash(npx firebase deploy:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm install:*)",
+      "Bash(firebase use:*)",
+      "Bash(firebase login:*)",
+      "Bash(pnpm build:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\hussain\\\\Documents\\\\GitHub\\\\map.certificate\\\\src\\\\views\\\\participant\"\" 2>/dev/null || echo \"Directory check completed \")"
     ],
     "deny": [],
     "ask": []

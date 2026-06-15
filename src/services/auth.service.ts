@@ -34,8 +34,8 @@ import { AuthErrorCode as ErrorCode, isFamilyCourtEmail, FAMILY_COURT_DOMAIN } f
 import { determinePrimaryRole } from '@/utils/role.helpers';
 
 export class AuthService {
-  // Use popup in development, redirect in production
-  private static USE_POPUP = import.meta.env.DEV;
+  // Use popup in development and for Google/Microsoft login on GitHub Pages for better reliability
+  private static USE_POPUP = true;
 
   /**
    * Handle redirect result after OAuth redirect completes
