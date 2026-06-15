@@ -203,3 +203,38 @@ or
 🌐 **https://map-certificate.web.app**
 
 Both URLs point to the same deployed application.
+
+---
+
+## Alternative: GitHub Pages Deployment
+
+If you are deploying to GitHub Pages (like `https://kudadonbe.mv/map.certificate/`), follow these specialized instructions to handle Single Page Application (SPA) routing.
+
+### 🛠️ Prerequisites
+1. **Authorized Domains**: Add your domain (e.g., `kudadonbe.mv` and `kudadonbe.github.io`) to **Firebase Console > Authentication > Settings > Authorized domains**.
+2. **Google Cloud Origins**: Add `https://your-domain.com` to **Authorized JavaScript origins** in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+
+### 🚀 Build & Deploy Workflow
+Since GitHub Pages doesn't support SPA routing natively, we use a "404 hack" included in the repository.
+
+1. **Build for Pages**:
+   ```bash
+   pnpm build:pages
+   ```
+   *This uses the `pages` mode which sets the correct base path (`/map.certificate/`) and outputs to the `docs/` folder.*
+
+2. **The SPA Hack Files**:
+   Ensure these files are present (they are already in the repo):
+   - `public/404.html`: Redirects 404s back to `index.html` with path info.
+   - `index.html`: Contains a script to restore the URL from the query string.
+
+3. **Push to GitHub**:
+   ```bash
+   git add docs/ index.html public/404.html
+   git commit -m "chore: deploy to github pages"
+   git push origin master
+   ```
+
+### 🔑 Authentication Configuration
+For GitHub Pages, we use **Popup Mode** for Google/Microsoft login to bypass cross-origin redirect restrictions.
+- This is controlled in `src/services/auth.service.ts` via `USE_POPUP = true`.

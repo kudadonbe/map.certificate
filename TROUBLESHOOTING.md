@@ -5,17 +5,51 @@
 ### Issue 1: Authorized Domains Not Configured
 
 **Symptom:** Login works on localhost but fails on hosted domain
-
 **Solution:**
 1. Go to Firebase Console: https://console.firebase.google.com/project/map-certificate/authentication/settings
 2. Scroll to "Authorized domains"
 3. Make sure these domains are added:
    - `localhost`
    - `map-certificate.firebaseapp.com`
-   - `map-certificate.web.app` (if using this domain)
+   - `map-certificate.web.app`
+   - `kudadonbe.mv` (your custom domain)
+   - `kudadonbe.github.io` (GitHub Pages default)
 
-**How to add:**
-- Click "Add domain"
+---
+
+### Issue 5: 404 Error on Page Refresh (GitHub Pages)
+
+**Symptom:** The app works when you go to the home page, but if you refresh a page like `/login`, you get a GitHub "File not found" 404 error.
+
+**Solution: The SPA Routing Hack**
+GitHub Pages doesn't support client-side routing. We use a redirect hack:
+1. Ensure `public/404.html` exists in your repository.
+2. Ensure the script in `index.html` is present to restore the path from the query string.
+3. Use **WebHistory** (clean URLs) instead of HashHistory. This is already configured in `src/router/index.ts`.
+
+### Issue 6: Google Login "Unauthorized Domain" after adding domain
+
+**Symptom:** You added the domain to Firebase, but Google Login still says `auth/unauthorized-domain`.
+
+**Solution: Google Cloud Console Whitelisting**
+Firebase sometimes fails to sync the domain to the underlying Google Cloud project.
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Find the OAuth 2.0 Client ID for your web app.
+3. Manually add `https://your-domain.com` to **Authorized JavaScript origins**.
+
+### Issue 7: Login Fails or "Cannot come back to app"
+
+**Symptom:** After selecting a Google account, the window closes or redirects, but you aren't logged in.
+
+**Solution: Switch to Popup Mode**
+Redirect mode often fails on GitHub Pages due to cross-site tracking protections (ITP) in browsers like Chrome and Safari.
+1. In `src/services/auth.service.ts`, ensure `USE_POPUP = true`.
+2. This ensures a small window handles the login, which is more reliable than a full-page redirect.
+
+---
+
+## Quick Diagnostic Steps
+
 - Enter the domain (without https://)
 - Click "Add"
 

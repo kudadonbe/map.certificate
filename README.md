@@ -4,6 +4,14 @@
 
 **AQD** (aqd.familycourt.gov.mv) is the digital ecosystem for Family Court, Maldives. It serves as a unified platform connecting the public to court services and managing internal office operations.
 
+The current active module is the **MAP Certificate Management System**, which handles Marriage Awareness Program certificates.
+
+### 🚀 Stable Production Status
+- **Clean URLs**: Full SPA routing support without `/#/` hash fragments using the 404-redirect hack.
+- **Robust Auth**: Multi-provider login (Google & Office 365) using secure popup flows for reliable production access.
+- **Bilingual**: Fully localized English and Dhivehi (RTL) support.
+- **Automated Workflow**: Certificate generation, signing, and email distribution.
+
 ### Vision
 
 ```
