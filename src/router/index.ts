@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { requireAuth, requireAdmin, requireOfficer, requireParticipant, guestOnly } from '@/middleware/auth.guards'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
@@ -77,9 +77,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: import.meta.env.MODE === 'pages'
-    ? createWebHashHistory(import.meta.env.BASE_URL)
-    : createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 })
 
